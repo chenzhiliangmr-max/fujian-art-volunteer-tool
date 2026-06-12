@@ -1,0 +1,36 @@
+<view class="page" wx:if="{{row}}">
+  <view class="panel">
+    <view class="row between">
+      <view class="title">{{row.item.school}}</view>
+      <view class="pill {{row.band}}">{{row.bandLabel}}</view>
+    </view>
+    <view class="meta">{{row.item.province}} · {{row.item.level}} · {{row.item.year}}</view>
+  </view>
+
+  <view class="panel detail">
+    <view class="line"><text>专业/信息</text><text>{{row.item.info}}</text></view>
+    <view class="line"><text>首选科目</text><text>{{row.subjectText}}</text></view>
+    <view class="line"><text>最低分</text><text>{{row.scoreText}}</text></view>
+    <view class="line"><text>数据状态</text><text>{{row.item.status}}</text></view>
+    <view class="line"><text>标签</text><text>{{row.tagsText}}</text></view>
+  </view>
+
+  <view class="panel">
+    <view class="card-title">风险提示</view>
+    <view class="risk">{{row.risk}}</view>
+  </view>
+
+  <view class="panel" wx:if="{{row.link}}">
+    <view class="card-title">官方来源</view>
+    <view class="meta">{{row.link}}</view>
+    <button class="secondary-btn" bindtap="copyLink">复制链接</button>
+  </view>
+
+  <button class="primary-btn" bindtap="toggleFavorite">{{isFavorite ? '取消收藏' : '加入收藏'}}</button>
+</view>
+
+<view class="page" wx:else>
+  <view class="panel">
+    <view class="subtle">暂无院校详情，请先从推荐列表进入。</view>
+  </view>
+</view>

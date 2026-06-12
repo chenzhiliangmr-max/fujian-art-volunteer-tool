@@ -1,0 +1,22 @@
+<view class="page">
+  <view class="panel">
+    <view class="title">数据说明</view>
+    <view class="subtle">当前版本：{{dataVersion}}</view>
+  </view>
+
+  <view class="panel">
+    <view class="card-title">同步方式</view>
+    <view class="risk">{{dataSourceNote}}</view>
+    <view class="meta">当前院校/专业记录 {{collegeCount}} 条，官方链接 {{linkCount}} 个。H5 页面和小程序共用同一份 `miniprogram/shared/fujian-art-data.js` 数据文件。</view>
+  </view>
+
+  <view class="panel">
+    <view class="card-title">综合分规则</view>
+    <view class="risk">2024/2025 福建美术与设计类：综合分 = 高考文化分 x 50% + 专业统考分 x 2.5 x 50%。2023 年及以前规则不同，不建议直接横向折算。</view>
+  </view>
+
+  <view class="panel">
+    <view class="card-title">填报提示</view>
+    <view class="risk">本工具仅作志愿筛选和记录参考。正式填报前，应以福建省教育考试院、招生章程、分省计划、学校录取查询结果为准，并重点复核计划数、收费、校区、中外合作培养方式和校考规则。</view>
+  </view>
+</view>

@@ -1,0 +1,16 @@
+.detail {
+  display: grid;
+  gap: 18rpx;
+}
+
+.line {
+  display: grid;
+  grid-template-columns: 170rpx 1fr;
+  gap: 18rpx;
+  font-size: 26rpx;
+  line-height: 1.5;
+}
+
+.line text:first-child {
+  color: #5d6872;
+}

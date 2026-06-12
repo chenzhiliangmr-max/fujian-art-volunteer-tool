@@ -720,13 +720,11 @@
 
       <div class="panel">
         <h2>一分一段表</h2>
-        <div class="notice">按位次生成需同时导入 2025、2026 两年福建美术与设计类一分一段表。格式：score,rank,count。</div>
-        <label for="rankText2025">2025一分一段表</label>
-        <textarea id="rankText2025" placeholder="score,rank,count&#10;550,1200,45&#10;549.75,1245,38"></textarea>
+        <div class="notice" id="rank2025Status">已内置 2025 福建美术与设计类综合分一分一段表，会按历史/物理自动切换。按位次生成还需要导入 2026 表。</div>
         <label for="rankText2026">2026一分一段表</label>
         <textarea id="rankText2026" placeholder="score,rank,count&#10;550,1180,42&#10;549.75,1221,37"></textarea>
         <div class="btnrow">
-          <button class="action ghost" id="loadRankBtn" type="button">导入位次</button>
+          <button class="action ghost" id="loadRankBtn" type="button">导入2026位次</button>
           <button class="action ghost" id="clearRankBtn" type="button">清空</button>
         </div>
       </div>
@@ -803,9 +801,11 @@
     <button class="action secondary" id="mobileCopyBtn" type="button">复制表</button>
   </div>
 
+  <script src="shared/fujian-art-rank-2025.js"></script>
   <script>
     const colleges = [
-      {school:"厦门大学", province:"福建", level:"985", year:2025, info:"绘画17；中外设计类56", subject:"both", min:null, status:"已有计划", tags:["public","985","coop","plan"]},
+      {school:"厦门大学", province:"福建", level:"985", year:2025, info:"绘画，福建计划17", subject:"both", min:null, status:"官方计划/待分数", tags:["public","985","plan"]},
+      {school:"厦门大学", province:"福建", level:"985/中外", year:2025, info:"中外合作办学项目（视觉传达设计/环境设计/数字媒体艺术等），福建计划56", subject:"both", min:null, status:"官方计划/待分数", tags:["public","985","coop","plan"]},
       {school:"福州大学", province:"福建", level:"211", year:2025, info:"美术学类", subject:"history", min:550, status:"已核", tags:["public","211"]},
       {school:"福州大学", province:"福建", level:"211", year:2025, info:"设计学类", subject:"history", min:552.75, status:"已核", tags:["public","211"]},
       {school:"福州大学", province:"福建", level:"211", year:2025, info:"美术学类", subject:"physics", min:559.5, status:"已核", tags:["public","211"]},
@@ -826,15 +826,16 @@
       {school:"闽南师范大学", province:"福建", level:"公办师范", year:2024, info:"公共艺术", subject:"history", min:511.5, status:"参考", tags:["public"]},
       {school:"闽南师范大学", province:"福建", level:"公办师范", year:2024, info:"美术学（师范）", subject:"physics", min:515.5, status:"参考", tags:["public"]},
       {school:"闽南师范大学", province:"福建", level:"公办师范", year:2024, info:"公共艺术", subject:"physics", min:502.5, status:"参考", tags:["public"]},
-      {school:"福建师范大学", province:"福建", level:"公办师范", year:2025, info:"美术学，福建计划约50", subject:"history", min:552.25, status:"官网入口/待复核", tags:["public","plan"]},
-      {school:"福建师范大学", province:"福建", level:"公办师范", year:2025, info:"设计学类，福建计划约52", subject:"history", min:551.25, status:"官网入口/待复核", tags:["public","plan"]},
-      {school:"福建师范大学", province:"福建", level:"公办师范", year:2024, info:"美术学", subject:"physics", min:560.25, status:"官网入口/待复核", tags:["public"]},
-      {school:"福建师范大学", province:"福建", level:"公办师范", year:2024, info:"设计学类", subject:"physics", min:559.25, status:"官网入口/待复核", tags:["public"]},
-      {school:"集美大学", province:"福建", level:"公办", year:2025, info:"动画", subject:"history", min:534.25, status:"官网", tags:["public"]},
-      {school:"集美大学", province:"福建", level:"公办", year:2025, info:"环境设计", subject:"history", min:529.5, status:"官网", tags:["public"]},
-      {school:"集美大学", province:"福建", level:"公办", year:2025, info:"美术学", subject:"history", min:531.25, status:"官网", tags:["public"]},
-      {school:"集美大学", province:"福建", level:"公办", year:2025, info:"视觉传达设计", subject:"history", min:536.5, status:"官网", tags:["public"]},
-      {school:"集美大学", province:"福建", level:"公办", year:2025, info:"环境设计", subject:"physics", min:537.5, status:"官网", tags:["public"]},
+      {school:"福建师范大学", province:"福建", level:"公办师范", year:2025, info:"美术学，录取77", subject:"history", min:544.5, status:"官方已核", tags:["public"]},
+      {school:"福建师范大学", province:"福建", level:"公办师范", year:2025, info:"设计学类，录取69", subject:"history", min:542.75, status:"官方已核", tags:["public"]},
+      {school:"福建师范大学", province:"福建", level:"公办师范", year:2025, info:"美术学，录取13", subject:"physics", min:544, status:"官方已核", tags:["public"]},
+      {school:"福建师范大学", province:"福建", level:"公办师范", year:2025, info:"设计学类，录取11", subject:"physics", min:545, status:"官方已核", tags:["public"]},
+      {school:"集美大学", province:"福建", level:"公办", year:2025, info:"动画，计划11", subject:"history", min:538.75, status:"官方已核", tags:["public"]},
+      {school:"集美大学", province:"福建", level:"公办", year:2025, info:"环境设计，计划20", subject:"history", min:531.5, status:"官方已核", tags:["public"]},
+      {school:"集美大学", province:"福建", level:"公办", year:2025, info:"美术学，计划50", subject:"history", min:534.75, status:"官方已核", tags:["public"]},
+      {school:"集美大学", province:"福建", level:"公办", year:2025, info:"视觉传达设计，计划13", subject:"history", min:541.25, status:"官方已核", tags:["public"]},
+      {school:"集美大学", province:"福建", level:"公办", year:2025, info:"环境设计，计划10", subject:"physics", min:525.25, status:"官方已核", tags:["public"]},
+      {school:"集美大学", province:"福建", level:"公办", year:2025, info:"美术学，计划15", subject:"physics", min:529.25, status:"官方已核", tags:["public"]},
       {school:"厦门理工学院", province:"福建", level:"公办", year:2025, info:"设计学类", subject:"history", min:525.25, status:"待复核", tags:["public"]},
       {school:"厦门理工学院", province:"福建", level:"公办", year:2025, info:"设计学类", subject:"physics", min:529.5, status:"待复核", tags:["public"]},
       {school:"厦门理工学院", province:"福建", level:"公办", year:2025, info:"动画", subject:"history", min:526.75, status:"待复核", tags:["public"]},
@@ -850,24 +851,25 @@
       {school:"福州大学至诚学院", province:"福建", level:"独立学院/民办", year:2025, info:"产品设计，录取65", subject:"both", min:486.25, status:"已核", tags:["private"]},
       {school:"东华大学", province:"上海", level:"211/双一流", year:2025, info:"数媒、服装、艺术与科技、产品、中外等", subject:"history", min:563.5, max:603.25, status:"已核", tags:["public","211","coop"]},
       {school:"东华大学", province:"上海", level:"211/双一流", year:2025, info:"中外合作相关专业", subject:"physics", min:552.75, max:572, status:"已核", tags:["public","211","coop"]},
-      {school:"上海大学", province:"上海", level:"211/双一流", year:2025, info:"视觉传达设计2；数字媒体艺术2", subject:"both", min:null, status:"官方计划/待分数", tags:["public","211","plan"]},
+      {school:"上海大学", province:"上海", level:"211/双一流", year:2025, info:"视觉传达设计，福建计划2", subject:"both", min:590.25, status:"官方已核", tags:["public","211"]},
+      {school:"上海大学", province:"上海", level:"211/双一流", year:2025, info:"数字媒体艺术，福建计划2", subject:"both", min:594.75, status:"官方已核", tags:["public","211"]},
       {school:"华东师范大学", province:"上海", level:"985", year:2025, info:"设计学类，福建计划3", subject:"both", min:null, status:"已有计划", tags:["public","985","plan"]},
-      {school:"天津大学", province:"天津", level:"985", year:2025, info:"环境设计，福建计划2", subject:"both", min:null, status:"已有计划", tags:["public","985","plan"]},
+      {school:"天津大学", province:"天津", level:"985", year:2025, info:"环境设计，福建计划2", subject:"both", min:null, status:"官方计划/待分数", tags:["public","985","plan"]},
       {school:"天津工业大学", province:"天津", level:"双一流/设计强", year:2025, info:"动画，计划6", subject:"both", min:545, status:"已核", tags:["public","double"]},
       {school:"天津工业大学", province:"天津", level:"双一流/设计强", year:2025, info:"视觉传达设计，计划4", subject:"both", min:540, status:"已核", tags:["public","double"]},
       {school:"天津工业大学", province:"天津", level:"双一流/设计强", year:2025, info:"环境设计，计划4", subject:"both", min:534, status:"已核", tags:["public","double"]},
       {school:"天津工业大学", province:"天津", level:"双一流/设计强", year:2025, info:"服装与服饰设计，计划4", subject:"both", min:537, status:"已核", tags:["public","double"]},
       {school:"江南大学", province:"江苏", level:"211/双一流/设计强", year:2025, info:"视传、环设、产品、服装、公共艺术、数媒、美术学等", subject:"both", min:null, status:"已有计划", tags:["public","211","plan"]},
       {school:"南京传媒学院", province:"江苏", level:"民办/传媒设计", year:2025, info:"美术与设计类", subject:"both", min:504.5, status:"已核", tags:["private"]},
-      {school:"东南大学", province:"江苏", level:"985", year:2025, info:"设计学类，福建计划3", subject:"both", min:null, status:"已有计划", tags:["public","985","plan"]},
+      {school:"东南大学", province:"江苏", level:"985", year:2025, info:"设计学类（含产品设计、美术学、动画），福建计划3", subject:"both", min:null, status:"官方计划/待分数", tags:["public","985","plan"]},
       {school:"浙江理工大学", province:"浙江", level:"公办/设计服装强", year:2025, info:"设计学类7人", subject:"both", min:null, status:"已有计划", tags:["public","plan"]},
       {school:"浙江理工大学", province:"浙江", level:"公办/中外", year:2025, info:"服装与服饰设计中法6人", subject:"both", min:null, status:"已有计划", tags:["public","coop","plan"]},
       {school:"浙江理工大学科技与艺术学院", province:"浙江", level:"独立学院/民办", year:2025, info:"视觉传达设计，录取70", subject:"both", min:532, status:"已核", tags:["private"]},
       {school:"浙江师范大学", province:"浙江", level:"公办师范", year:2025, info:"动画、设计学类、数字媒体艺术，小计7人", subject:"both", min:null, status:"已有计划", tags:["public","plan"]},
       {school:"温州大学", province:"浙江", level:"公办", year:2025, info:"服装与服饰设计，计划3", subject:"both", min:null, status:"已有计划", tags:["public","plan"]},
       {school:"湖州师范学院", province:"浙江", level:"公办师范", year:2025, info:"产品设计/服装", subject:"history", min:512, max:524, status:"已核", tags:["public"]},
-      {school:"海南大学", province:"海南", level:"211", year:2025, info:"视觉传达设计，计划9", subject:"history", min:549.25, status:"已核", tags:["public","211"]},
-      {school:"海南大学", province:"海南", level:"211", year:2025, info:"绘画，计划9", subject:"history", min:547.5, status:"已核", tags:["public","211"]},
+      {school:"海南大学", province:"海南", level:"211", year:2025, info:"视觉传达设计，福建计划5", subject:"history", min:549.25, status:"官方已核", tags:["public","211"]},
+      {school:"海南大学", province:"海南", level:"211", year:2025, info:"绘画，福建计划4", subject:"history", min:547.5, status:"官方已核", tags:["public","211"]},
       {school:"华南师范大学", province:"广东", level:"211/双一流", year:2025, info:"美术学5；产品设计3", subject:"history", min:null, status:"已有计划", tags:["public","211","plan"]},
       {school:"湖北大学", province:"湖北", level:"公办重点", year:2025, info:"设计学类", subject:"both", min:539.25, status:"已核", tags:["public"]},
       {school:"湖北大学", province:"湖北", level:"公办重点/中外", year:2025, info:"数字媒体艺术中外", subject:"both", min:506.75, status:"已核", tags:["public","coop"]},
@@ -887,6 +889,92 @@
       {school:"景德镇陶瓷大学", province:"江西", level:"专业强校", year:2025, info:"美术与设计类校考", subject:"both", min:null, status:"校考，不直接比较", tags:["public","art","special"]},
       {school:"玉林师范学院", province:"广西", level:"公办师范", year:2025, info:"工艺美术、环境设计、美术学", subject:"both", min:486.25, status:"已核", tags:["public"]},
       {school:"宁夏大学", province:"宁夏", level:"211/双一流", year:2025, info:"绘画，福建有招生", subject:"both", min:null, status:"已有计划", tags:["public","211","plan"]},
+      {school:"福建江夏学院", province:"福建", level:"公办", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","todo"]},
+      {school:"福建农林大学", province:"福建", level:"公办", year:2025, info:"产品设计，录取62", subject:"history", min:530, status:"官方已核", tags:["public"]},
+      {school:"福建农林大学", province:"福建", level:"公办", year:2025, info:"动画，录取40", subject:"history", min:533, status:"官方已核", tags:["public"]},
+      {school:"福建农林大学", province:"福建", level:"公办", year:2025, info:"环境设计，录取40", subject:"history", min:526, status:"官方已核", tags:["public"]},
+      {school:"福建农林大学", province:"福建", level:"公办", year:2025, info:"产品设计，录取13", subject:"physics", min:527, status:"官方已核", tags:["public"]},
+      {school:"福建农林大学", province:"福建", level:"公办", year:2025, info:"动画，录取10", subject:"physics", min:532, status:"官方已核", tags:["public"]},
+      {school:"福建农林大学", province:"福建", level:"公办", year:2025, info:"环境设计，录取10", subject:"physics", min:521, status:"官方已核", tags:["public"]},
+      {school:"华侨大学", province:"福建", level:"公办/双一流培育", year:2025, info:"美术类，福建面向全省计划26", subject:"history", min:null, status:"官方计划/待分数", tags:["public","plan"]},
+      {school:"华侨大学", province:"福建", level:"公办/双一流培育", year:2025, info:"美术类，福建面向全省计划6", subject:"physics", min:null, status:"官方计划/待分数", tags:["public","plan"]},
+      {school:"闽江学院", province:"福建", level:"公办", year:2025, info:"环境设计", subject:"history", min:516, status:"官方已核", tags:["public"]},
+      {school:"闽江学院", province:"福建", level:"公办", year:2025, info:"视觉传达设计", subject:"history", min:522.75, status:"官方已核", tags:["public"]},
+      {school:"闽江学院", province:"福建", level:"公办", year:2025, info:"绘画", subject:"history", min:518.5, status:"官方已核", tags:["public"]},
+      {school:"闽江学院", province:"福建", level:"公办", year:2025, info:"工艺美术", subject:"history", min:518.25, status:"官方已核", tags:["public"]},
+      {school:"闽江学院", province:"福建", level:"公办", year:2025, info:"服装与服饰设计", subject:"history", min:513.25, status:"官方已核", tags:["public"]},
+      {school:"闽江学院", province:"福建", level:"公办", year:2025, info:"数字媒体艺术", subject:"history", min:523, status:"官方已核", tags:["public"]},
+      {school:"闽江学院", province:"福建", level:"公办", year:2025, info:"环境设计", subject:"physics", min:508.75, status:"官方已核", tags:["public"]},
+      {school:"闽江学院", province:"福建", level:"公办", year:2025, info:"视觉传达设计", subject:"physics", min:514.75, status:"官方已核", tags:["public"]},
+      {school:"闽江学院", province:"福建", level:"公办", year:2025, info:"绘画", subject:"physics", min:506.25, status:"官方已核", tags:["public"]},
+      {school:"闽江学院", province:"福建", level:"公办", year:2025, info:"工艺美术", subject:"physics", min:504.25, status:"官方已核", tags:["public"]},
+      {school:"闽江学院", province:"福建", level:"公办", year:2025, info:"服装与服饰设计", subject:"physics", min:497.75, status:"官方已核", tags:["public"]},
+      {school:"闽江学院", province:"福建", level:"公办", year:2025, info:"数字媒体艺术", subject:"physics", min:516.75, status:"官方已核", tags:["public"]},
+      {school:"闽江学院", province:"福建", level:"公办/闽台", year:2025, info:"环境设计（闽台合作）", subject:"history", min:505.25, status:"官方已核", tags:["public","coop"]},
+      {school:"闽江学院", province:"福建", level:"公办/闽台", year:2025, info:"服装与服饰设计（闽台合作）", subject:"history", min:503.25, status:"官方已核", tags:["public","coop"]},
+      {school:"闽江学院", province:"福建", level:"公办/闽台", year:2025, info:"环境设计（闽台合作）", subject:"physics", min:483.25, status:"官方已核", tags:["public","coop"]},
+      {school:"闽江学院", province:"福建", level:"公办/闽台", year:2025, info:"服装与服饰设计（闽台合作）", subject:"physics", min:480.25, status:"官方已核", tags:["public","coop"]},
+      {school:"闽江学院", province:"福建", level:"公办/中外", year:2025, info:"视觉传达设计（中外合作）", subject:"history", min:475.25, status:"官方已核", tags:["public","coop"]},
+      {school:"闽江学院", province:"福建", level:"公办/中外", year:2025, info:"视觉传达设计（中外合作）", subject:"physics", min:437.5, status:"官方已核", tags:["public","coop"]},
+      {school:"安徽工程大学", province:"安徽", level:"公办", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","todo"]},
+      {school:"安徽师范大学", province:"安徽", level:"公办师范", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","todo"]},
+      {school:"北京服装学院", province:"北京", level:"公办/设计强校", year:2025, info:"产品设计，福建录取13人，最高543，最低513，平均519", subject:"both", min:513, max:543, status:"官方已核", source:"北京服装学院本科招生网《北京服装学院2025年艺术类本科专业录取分数线》", tags:["public","art"]},
+      {school:"北京服装学院", province:"北京", level:"公办/设计强校", year:2025, info:"艺术与科技，福建录取6人，最高535，最低520，平均525", subject:"both", min:520, max:535, status:"官方已核", source:"北京服装学院本科招生网《北京服装学院2025年艺术类本科专业录取分数线》", tags:["public","art"]},
+      {school:"北京服装学院", province:"北京", level:"公办/设计强校", year:2025, info:"环境设计，福建录取9人，最高536，最低511，平均515", subject:"both", min:511, max:536, status:"官方已核", source:"北京服装学院本科招生网《北京服装学院2025年艺术类本科专业录取分数线》", tags:["public","art"]},
+      {school:"北京服装学院", province:"北京", level:"公办/设计强校", year:2025, info:"动画，福建录取2人，最高542，最低538，平均540", subject:"both", min:538, max:542, status:"官方已核", source:"北京服装学院本科招生网《北京服装学院2025年艺术类本科专业录取分数线》", tags:["public","art"]},
+      {school:"北京服装学院", province:"北京", level:"公办/设计强校", year:2025, info:"摄影，福建录取3人，最高518，最低511，平均515", subject:"both", min:511, max:518, status:"官方已核", source:"北京服装学院本科招生网《北京服装学院2025年艺术类本科专业录取分数线》", tags:["public","art"]},
+      {school:"北京服装学院", province:"北京", level:"公办/设计强校", year:2025, info:"绘画（学校美育），福建录取2人，最高546，最低511，平均529", subject:"both", min:511, max:546, status:"官方已核", source:"北京服装学院本科招生网《北京服装学院2025年艺术类本科专业录取分数线》", tags:["public","art"]},
+      {school:"北京服装学院", province:"北京", level:"公办/设计强校", year:2025, info:"中国画，福建录取3人，最高513，最低511，平均512", subject:"both", min:511, max:513, status:"官方已核", source:"北京服装学院本科招生网《北京服装学院2025年艺术类本科专业录取分数线》", tags:["public","art"]},
+      {school:"北京服装学院", province:"北京", level:"公办/设计强校", year:2025, info:"雕塑，福建录取1人，最高527，最低527，平均527", subject:"both", min:527, max:527, status:"官方已核", source:"北京服装学院本科招生网《北京服装学院2025年艺术类本科专业录取分数线》", tags:["public","art"]},
+      {school:"北京服装学院", province:"北京", level:"公办/设计强校", year:2025, info:"公共艺术，福建录取1人，最高513，最低513，平均513", subject:"both", min:513, max:513, status:"官方已核", source:"北京服装学院本科招生网《北京服装学院2025年艺术类本科专业录取分数线》", tags:["public","art"]},
+      {school:"北京航空航天大学", province:"北京", level:"985", year:2025, info:"艺术类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","985","todo"]},
+      {school:"北京交通大学", province:"北京", level:"211/双一流", year:2025, info:"设计学类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","211","todo"]},
+      {school:"北京林业大学", province:"北京", level:"211/双一流", year:2025, info:"设计学类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","211","todo"]},
+      {school:"北京印刷学院", province:"北京", level:"公办/设计传媒", year:2025, info:"官网历年分数查询页已定位，2025福建艺术类分专业录取数据待接口核验", subject:"both", min:null, status:"官方查询页待核验", source:"北京印刷学院本科招生网历年分数查询页", tags:["public","todo"]},
+      {school:"重庆师范大学", province:"重庆", level:"公办师范", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","todo"]},
+      {school:"长沙理工大学", province:"湖南", level:"公办", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","todo"]},
+      {school:"成都大学", province:"四川", level:"公办", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","todo"]},
+      {school:"东北大学", province:"辽宁", level:"985", year:2025, info:"设计学类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","985","todo"]},
+      {school:"合肥工业大学", province:"安徽", level:"211/双一流", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","211","todo"]},
+      {school:"河南大学", province:"河南", level:"双一流", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","double","todo"]},
+      {school:"湖南师范大学", province:"湖南", level:"211/双一流", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","211","todo"]},
+      {school:"湖北工业大学", province:"湖北", level:"公办/设计强校", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","todo"]},
+      {school:"湖北美术学院", province:"湖北", level:"专业艺术院校", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","art","todo"]},
+      {school:"江西财经大学", province:"江西", level:"公办", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","todo"]},
+      {school:"江西师范大学", province:"江西", level:"公办师范", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","todo"]},
+      {school:"兰州大学", province:"甘肃", level:"985", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","985","todo"]},
+      {school:"南昌大学", province:"江西", level:"211/双一流", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","211","todo"]},
+      {school:"南京财经大学", province:"江苏", level:"公办", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","todo"]},
+      {school:"南京工业大学", province:"江苏", level:"公办", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","todo"]},
+      {school:"南京林业大学", province:"江苏", level:"双一流", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","double","todo"]},
+      {school:"南京艺术学院", province:"江苏", level:"专业艺术院校", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","art","todo"]},
+      {school:"南京邮电大学", province:"江苏", level:"双一流", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","double","todo"]},
+      {school:"山东艺术学院", province:"山东", level:"专业艺术院校", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","art","todo"]},
+      {school:"陕西师范大学", province:"陕西", level:"211/双一流", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","211","todo"]},
+      {school:"上海交通大学", province:"上海", level:"985", year:2025, info:"艺术类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","985","todo"]},
+      {school:"首都师范大学", province:"北京", level:"双一流", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","double","todo"]},
+      {school:"四川大学", province:"四川", level:"985", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","985","todo"]},
+      {school:"四川美术学院", province:"重庆", level:"专业艺术院校", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","art","todo"]},
+      {school:"四川农业大学", province:"四川", level:"211/双一流", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","211","todo"]},
+      {school:"四川师范大学", province:"四川", level:"公办师范", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","todo"]},
+      {school:"天津师范大学", province:"天津", level:"公办师范", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","todo"]},
+      {school:"武汉工程大学", province:"湖北", level:"公办", year:2025, info:"美术与设计类福建招生待核（用户写作武汉工程学院）", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","todo"]},
+      {school:"西安美术学院", province:"陕西", level:"专业艺术院校", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","art","todo"]},
+      {school:"西北农林科技大学", province:"陕西", level:"985", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","985","todo"]},
+      {school:"西北师范大学", province:"甘肃", level:"公办师范", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","todo"]},
+      {school:"西南政法大学", province:"重庆", level:"公办", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","todo"]},
+      {school:"西南财经大学", province:"四川", level:"211/双一流", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","211","todo"]},
+      {school:"西南交通大学", province:"四川", level:"211/双一流", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","211","todo"]},
+      {school:"新疆大学", province:"新疆", level:"211/双一流", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","211","todo"]},
+      {school:"云南艺术学院", province:"云南", level:"专业艺术院校", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","art","todo"]},
+      {school:"浙江传媒学院", province:"浙江", level:"公办/传媒艺术", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","todo"]},
+      {school:"中国矿业大学", province:"江苏", level:"211/双一流", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","211","todo"]},
+      {school:"中南林业科技大学", province:"湖南", level:"公办", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","todo"]},
+      {school:"中国地质大学（北京）", province:"北京", level:"211/双一流", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","211","todo"]},
+      {school:"中国地质大学（武汉）", province:"湖北", level:"211/双一流", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","211","todo"]},
+      {school:"中国美术学院", province:"浙江", level:"双一流/专业艺术院校", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","art","double","todo"]},
+      {school:"中国人民大学", province:"北京", level:"985", year:2025, info:"艺术类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","985","todo"]},
+      {school:"中国戏曲学院", province:"北京", level:"专业艺术院校", year:2025, info:"美术与设计类福建招生待核", subject:"both", min:null, status:"用户清单/待官方核验", tags:["public","art","todo"]},
       {school:"中央民族大学", province:"北京", level:"985", year:2025, info:"美术类校考专业，按校考口径录取", subject:"both", min:null, status:"校考，不直接比较", tags:["public","985","art","special"]}
     ];
 
@@ -894,17 +982,21 @@
       "厦门大学": "https://zs.xmu.edu.cn/info/1051/32812.htm",
       "福州大学": "https://zsks.fzu.edu.cn/info/1068/2346.htm",
       "福建理工大学": "https://join.fjut.edu.cn/2025/0603/c4011a254799/page.htm",
+      "福建江夏学院": "https://zsb.fjjxu.edu.cn/",
+      "福建农林大学": "https://zsb.fafu.edu.cn/2026/0311/c515a94559/page.htm",
+      "华侨大学": "https://zsc.hqu.edu.cn/info/1024/7692.htm",
       "福建商学院": "https://zsb.fjbu.edu.cn/__local/B/E6/2D/6C47B0340EC69F6A1512868BBBB_E993F87F_12687.pdf",
       "福建技术师范学院": "https://zsb.fpnu.edu.cn/info/1068/2678.htm",
       "闽南师范大学": "https://zsb.mnnu.edu.cn/info/1032/2801.htm",
       "福建师范大学": "https://zsb.fjnu.edu.cn/_web/_apps/commonquery/commonquery/api/queryMatch/9.rst?_p=YXM9MTImdD0xNTYzJnA9MSZtPU4m&mongo=false",
       "集美大学": "https://zsb.jmu.edu.cn/bkszs.htm",
+      "闽江学院": "https://zsb.mju.edu.cn/2025/0713/c2134a205778/page.htm",
       "厦门理工学院": "https://zsb.xmut.edu.cn/",
       "泉州师范学院": "https://www.qztc.edu.cn/_upload/article/files/d6/a6/e972e90e41178ac02aaca8e47f3a/888970f5-a764-437d-986f-674ce045be34.pdf",
       "莆田学院": "https://www.ptu.edu.cn/zhaosheng/info/1007/2143.htm",
       "福州大学至诚学院": "https://zsb.fdzcxy.edu.cn/",
       "东华大学": "https://zs.dhu.edu.cn/2025/0508/c9563a361538/page.htm",
-      "上海大学": "https://bkzsw.shu.edu.cn/__local/9/8A/CA/69598E3D64E7D7CAFA6FFDEAC82_07BB6686_C87B0.pdf",
+      "上海大学": "https://mp.weixin.qq.com/s/wANz1RUArTorfrhbva5wfA",
       "华东师范大学": "https://zsb.ecnu.edu.cn/83/fc/c37592a689148/page.htm",
       "天津大学": "https://zs.tju.edu.cn/info/1147/2499.htm",
       "天津工业大学": "https://zsb.tiangong.edu.cn/2025/0512/c193a104742/page.htm",
@@ -935,7 +1027,8 @@
 
     let subject = "history";
     let recommendMode = "score";
-    let rankData2025 = [];
+    const embeddedRankData2025BySubject = (window.FujianArtRank2025 && window.FujianArtRank2025.rankData2025BySubject) || { history: [], physics: [] };
+    let rankData2025 = embeddedRankData2025BySubject[subject] || [];
     let rankData2026 = [];
     let latestRecommendations = [];
     let recommendationNotice = "";
@@ -944,6 +1037,16 @@
     const $ = id => document.getElementById(id);
     const fmt = n => n == null ? "待补" : Number(n).toFixed(2).replace(/\\.00$/, "");
     const hasAny = (item, tags) => tags.some(t => item.tags.includes(t));
+
+    function setRankData2025ForSubject() {
+      rankData2025 = embeddedRankData2025BySubject[subject] || [];
+      const status = $("rank2025Status");
+      if (!status) return;
+      const subjectText = subject === "history" ? "历史组" : "物理组";
+      status.textContent = rankData2025.length
+        ? `已内置 2025 福建美术与设计类${subjectText}综合分一分一段表（${rankData2025.length} 行）。按位次生成还需要导入 2026 表。`
+        : `未加载到 2025 ${subjectText}一分一段表，请检查 shared/fujian-art-rank-2025.js。`;
+    }
 
     function rankForScore(score, data) {
       if (!data.length || !Number.isFinite(score)) return null;
@@ -1108,7 +1211,9 @@
 
       if (recommendMode === "rank" && (!rankData2025.length || !rankData2026.length)) {
         latestRecommendations = [];
-        recommendationNotice = "按位次生成需要同时导入 2025、2026 两年一分一段表。2025表用于查往年录取位次，2026表用于换算今年等位分。";
+        recommendationNotice = !rankData2025.length
+          ? "未加载到内置 2025 一分一段表，请检查 shared/fujian-art-rank-2025.js。"
+          : "按位次生成需要导入 2026 一分一段表。2025表已内置，用于查往年录取位次；2026表用于换算今年等位分。";
         render(score, userRank, false);
         return;
       }
@@ -1177,7 +1282,7 @@
       $("modeMetric").textContent = recommendMode === "rank" ? "位次" : "分数";
       $("modeHint").textContent = recommendMode === "rank" ? "2025位次映射2026等位分" : "当前按综合分差值";
       $("rankMetric").textContent = userRank || "暂无";
-      $("rankHint").textContent = userRank ? ($("rankInput").value ? "手动输入" : "来自一分一段表") : "未导入一分一段表";
+      $("rankHint").textContent = userRank ? ($("rankInput").value ? "手动输入" : "来自2026一分一段表") : "未导入2026表";
 
       $("collegeRows").innerHTML = rows.map(item => `
         <tr>
@@ -1210,7 +1315,7 @@
       }
       const rows = [];
       if (rankData2025.length) {
-        rows.push(`<tr><td colspan="3"><strong>2025表</strong></td></tr>`);
+        rows.push(`<tr><td colspan="3"><strong>2025${subject === "history" ? "历史组" : "物理组"}内置表</strong></td></tr>`);
         rows.push(...rankData2025.sort((a, b) => b.score - a.score).slice(0, 120).map(r => `<tr><td>${fmt(r.score)}</td><td>${r.rank}</td><td>${r.count || ""}</td></tr>`));
       }
       if (rankData2026.length) {
@@ -1321,6 +1426,8 @@
         document.querySelectorAll("#subjectSeg button").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
         subject = btn.dataset.value;
+        setRankData2025ForSubject();
+        renderRanks();
         makeRecommendations();
       });
     });
@@ -1367,20 +1474,20 @@
     $("exportBtn").addEventListener("click", downloadCsv);
     $("copyCsvBtn").addEventListener("click", copyCsvText);
     $("loadRankBtn").addEventListener("click", () => {
-      rankData2025 = parseRankData($("rankText2025").value);
       rankData2026 = parseRankData($("rankText2026").value);
+      setRankData2025ForSubject();
       renderRanks();
       makeRecommendations();
     });
     $("clearRankBtn").addEventListener("click", () => {
-      rankData2025 = [];
       rankData2026 = [];
-      $("rankText2025").value = "";
       $("rankText2026").value = "";
+      setRankData2025ForSubject();
       renderRanks();
       makeRecommendations();
     });
 
+    setRankData2025ForSubject();
     makeRecommendations();
     renderRanks();
   </script>

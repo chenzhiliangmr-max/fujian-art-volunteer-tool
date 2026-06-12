@@ -1,0 +1,44 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/results/results",
+    "pages/school/school",
+    "pages/favorites/favorites",
+    "pages/me/me",
+    "pages/admin/admin",
+    "pages/admin-edit/admin-edit",
+    "pages/about/about"
+  ],
+  "window": {
+    "navigationBarTitleText": "福建美术志愿助手",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f5f7f8"
+  },
+  "tabBar": {
+    "color": "#66727d",
+    "selectedColor": "#2563a9",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "推荐"
+      },
+      {
+        "pagePath": "pages/favorites/favorites",
+        "text": "收藏"
+      },
+      {
+        "pagePath": "pages/me/me",
+        "text": "我的"
+      },
+      {
+        "pagePath": "pages/about/about",
+        "text": "说明"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json"
+}

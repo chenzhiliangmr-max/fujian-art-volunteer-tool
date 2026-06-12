@@ -1,0 +1,55 @@
+<view class="page">
+  <view class="panel">
+    <view class="title">编辑院校数据</view>
+    <view class="subtle">保存后会覆盖本机数据源，并立即参与推荐。</view>
+  </view>
+
+  <view class="panel">
+    <view class="label">院校</view>
+    <input class="input" value="{{form.school}}" data-field="school" bindinput="onInput" />
+    <view class="grid-2">
+      <view>
+        <view class="label">省份</view>
+        <input class="input" value="{{form.province}}" data-field="province" bindinput="onInput" />
+      </view>
+      <view>
+        <view class="label">层级</view>
+        <input class="input" value="{{form.level}}" data-field="level" bindinput="onInput" />
+      </view>
+    </view>
+    <view class="grid-2">
+      <view>
+        <view class="label">年份</view>
+        <input class="input" type="number" value="{{form.year}}" data-field="year" bindinput="onInput" />
+      </view>
+      <view>
+        <view class="label">状态</view>
+        <input class="input" value="{{form.status}}" data-field="status" bindinput="onInput" />
+      </view>
+    </view>
+
+    <view class="label">首选科目</view>
+    <view class="seg">
+      <button wx:for="{{subjectOptions}}" wx:key="value" class="{{form.subject === item.value ? 'active' : ''}}" data-subject="{{item.value}}" bindtap="setSubject">{{item.label}}</button>
+    </view>
+
+    <view class="label">专业/计划信息</view>
+    <textarea class="textarea" value="{{form.info}}" data-field="info" bindinput="onInput" />
+
+    <view class="grid-2">
+      <view>
+        <view class="label">最低分</view>
+        <input class="input" type="digit" value="{{form.min}}" data-field="min" bindinput="onInput" placeholder="待补可留空" />
+      </view>
+      <view>
+        <view class="label">最高分</view>
+        <input class="input" type="digit" value="{{form.max}}" data-field="max" bindinput="onInput" placeholder="可选" />
+      </view>
+    </view>
+
+    <view class="label">标签</view>
+    <input class="input" value="{{form.tags}}" data-field="tags" bindinput="onInput" placeholder="public,211,plan" />
+  </view>
+
+  <button class="primary-btn" bindtap="save">保存数据</button>
+</view>

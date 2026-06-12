@@ -1,0 +1,32 @@
+<view class="page">
+  <view class="panel head">
+    <view>
+      <view class="title">志愿建议</view>
+      <view class="subtle">院校池 {{poolCount}} 条，按{{modeText}}判断，位次 {{rankText}}</view>
+      <view class="subtle">{{modeHint}}</view>
+    </view>
+    <view class="head-actions">
+      <button class="secondary-btn small-btn" bindtap="copyList">复制</button>
+      <button class="secondary-btn small-btn" bindtap="saveRecord">保存</button>
+    </view>
+  </view>
+
+  <view wx:if="{{rows.length === 0}}" class="panel">
+    <view class="subtle">{{notice || '当前筛选条件下没有足够数据，可返回放宽民办、中外合作或待补数据限制。'}}</view>
+  </view>
+
+  <view wx:for="{{rows}}" wx:key="key" class="card">
+    <view class="row between">
+      <view class="card-title" bindtap="openSchool" data-key="{{item.key}}">{{item.index}}. {{item.item.school}}</view>
+      <view class="pill {{item.band}}">{{item.bandLabel}}</view>
+    </view>
+    <view class="meta">{{item.item.province}} · {{item.item.level}} · {{item.item.year}} · {{item.subjectText}}</view>
+    <view class="meta">{{item.item.info}} · 最低分 {{item.scoreText}} · {{item.item.status}}</view>
+    <view wx:if="{{item.equivalentScore}}" class="meta">2026等位分约 {{item.equivalentScore}}</view>
+    <view class="risk">{{item.risk}}</view>
+    <view class="actions">
+      <button class="secondary-btn action-btn" data-key="{{item.key}}" bindtap="openSchool">详情</button>
+      <button class="secondary-btn action-btn" data-key="{{item.key}}" bindtap="toggleFavorite">{{item.isFavorite ? '取消收藏' : '收藏'}}</button>
+    </view>
+  </view>
+</view>

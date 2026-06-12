@@ -1,0 +1,20 @@
+<view class="page">
+  <view class="panel">
+    <view class="title">收藏院校</view>
+    <view class="subtle">保存正在比较的院校，填报前仍需回到官方来源复核。</view>
+  </view>
+
+  <view wx:if="{{rows.length === 0}}" class="panel">
+    <view class="subtle">还没有收藏。可在志愿建议页把目标院校加入收藏。</view>
+  </view>
+
+  <view wx:for="{{rows}}" wx:key="key" class="card">
+    <view class="card-title" data-key="{{item.key}}" bindtap="openSchool">{{item.item.school}}</view>
+    <view class="meta">{{item.item.province}} · {{item.item.level}} · {{item.item.year}} · {{item.subjectText}}</view>
+    <view class="meta">{{item.item.info}} · 最低分 {{item.scoreText}} · {{item.item.status}}</view>
+    <view class="actions">
+      <button class="secondary-btn action-btn" data-key="{{item.key}}" bindtap="openSchool">详情</button>
+      <button class="secondary-btn action-btn" data-key="{{item.key}}" bindtap="remove">移除</button>
+    </view>
+  </view>
+</view>

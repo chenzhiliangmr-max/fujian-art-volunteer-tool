@@ -1,0 +1,47 @@
+<view class="page">
+  <view class="panel">
+    <view class="title">我的</view>
+    <view class="subtle">登录后可保存收藏、记录志愿草表；管理员可维护院校数据。</view>
+  </view>
+
+  <view class="panel" wx:if="{{user}}">
+    <view class="line"><text>用户标识</text><text>{{user.openid}}</text></view>
+    <view class="line"><text>角色</text><text>{{user.role}}</text></view>
+    <view class="line"><text>来源</text><text>{{user.source}}</text></view>
+    <view class="line"><text>收藏数</text><text>{{favoriteCount}}</text></view>
+    <button class="secondary-btn" bindtap="logout">退出登录</button>
+  </view>
+
+  <view class="panel" wx:else>
+    <button class="primary-btn" bindtap="login">微信登录</button>
+  </view>
+
+  <view class="panel">
+    <view class="row between">
+      <view>
+        <view class="card-title">管理员模式</view>
+        <view class="subtle">开发测试用；正式上线请改为云端 users 权限表。</view>
+      </view>
+      <switch checked="{{admin}}" bindchange="toggleLocalAdmin" />
+    </view>
+    <button class="primary-btn admin-btn" bindtap="openAdmin">进入数据管理</button>
+  </view>
+
+  <view class="panel">
+    <view class="card-title">志愿草表</view>
+    <view wx:if="{{records.length === 0}}" class="subtle">暂无保存记录</view>
+    <view wx:for="{{records}}" wx:key="id" class="log">
+      <view>{{item.createdAt}} · {{item.rows.length}} 条</view>
+      <button class="secondary-btn mini-btn" data-id="{{item.id}}" bindtap="copyRecord">复制草表</button>
+    </view>
+  </view>
+
+  <view class="panel">
+    <view class="card-title">最近维护记录</view>
+    <view wx:if="{{auditLogs.length === 0}}" class="subtle">暂无记录</view>
+    <view wx:for="{{auditLogs}}" wx:key="time" class="log">
+      <view>{{item.action}} · {{item.detail}}</view>
+      <view class="subtle">{{item.time}}</view>
+    </view>
+  </view>
+</view>

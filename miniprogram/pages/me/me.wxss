@@ -1,0 +1,30 @@
+.line {
+  display: grid;
+  grid-template-columns: 160rpx 1fr;
+  gap: 16rpx;
+  margin-bottom: 18rpx;
+  line-height: 1.5;
+}
+
+.line text:first-child {
+  color: #5d6872;
+}
+
+.admin-btn {
+  margin-top: 24rpx;
+}
+
+.log {
+  padding: 18rpx 0;
+  border-bottom: 1rpx solid #edf1f4;
+  line-height: 1.5;
+}
+
+.log:last-child {
+  border-bottom: 0;
+}
+
+.mini-btn {
+  margin: 12rpx 0 0;
+  font-size: 24rpx;
+}

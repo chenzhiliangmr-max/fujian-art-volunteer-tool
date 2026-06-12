@@ -1,0 +1,30 @@
+.textarea {
+  width: 100%;
+  min-height: 150rpx;
+  padding: 18rpx 20rpx;
+  border: 1rpx solid #c9d3db;
+  border-radius: 10rpx;
+  box-sizing: border-box;
+}
+
+.seg {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 1rpx solid #c9d3db;
+  border-radius: 10rpx;
+  overflow: hidden;
+}
+
+.seg button {
+  background: #ffffff;
+  color: #172026;
+  border: 0;
+  border-radius: 0;
+  font-size: 24rpx;
+}
+
+.seg button.active {
+  background: #e7f0f8;
+  color: #2563a9;
+  font-weight: 700;
+}

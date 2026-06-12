@@ -1,0 +1,37 @@
+<view class="page">
+  <view class="panel head">
+    <view>
+      <view class="title">数据管理</view>
+      <view class="subtle">数据源：{{source}}，当前显示 {{rows.length}} 条。</view>
+    </view>
+    <button class="primary-btn small-btn" bindtap="add">新增</button>
+  </view>
+
+  <view class="panel">
+    <input class="input" value="{{keyword}}" bindinput="onKeyword" placeholder="搜索院校、省份、专业、状态" />
+    <view class="tools">
+      <button class="secondary-btn tool-btn" bindtap="exportData">导出</button>
+      <button class="secondary-btn tool-btn" bindtap="toggleImport">导入</button>
+      <button class="secondary-btn tool-btn" bindtap="reset">恢复</button>
+    </view>
+    <view wx:if="{{showImport}}" class="import-box">
+      <textarea class="textarea" value="{{importText}}" bindinput="onImportText" placeholder="粘贴院校 JSON 数组"></textarea>
+      <view class="subtle import-note">导入导出仅处理院校/专业记录；官网链接仍从共享数据文件读取。</view>
+      <button class="primary-btn" bindtap="importData">确认导入</button>
+    </view>
+  </view>
+
+  <view wx:for="{{rows}}" wx:key="key" class="card">
+    <view class="row between">
+      <view class="card-title">{{item.school}}</view>
+      <view class="pill info">{{item.status}}</view>
+    </view>
+    <view class="meta">{{item.province}} · {{item.level}} · {{item.year}} · {{item.subjectText}}</view>
+    <view class="meta">{{item.info}} · 最低分 {{item.minText}}</view>
+    <view class="meta">标签：{{item.tagsText}}</view>
+    <view class="actions">
+      <button class="secondary-btn action-btn" data-key="{{item.key}}" bindtap="edit">编辑</button>
+      <button class="secondary-btn action-btn" data-key="{{item.key}}" bindtap="remove">删除</button>
+    </view>
+  </view>
+</view>

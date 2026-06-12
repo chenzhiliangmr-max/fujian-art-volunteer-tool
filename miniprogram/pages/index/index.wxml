@@ -1,0 +1,102 @@
+<view class="page">
+  <view class="panel">
+    <view class="title">福建美术与设计类志愿助手</view>
+    <view class="subtle">数据版本：{{dataVersion}}。输入分数后生成冲、稳、保院校建议。</view>
+  </view>
+
+  <view class="panel">
+    <view class="label">首选科目</view>
+    <view class="seg">
+      <button class="{{subject === 'history' ? 'active' : ''}}" data-subject="history" bindtap="setSubject">历史</button>
+      <button class="{{subject === 'physics' ? 'active' : ''}}" data-subject="physics" bindtap="setSubject">物理</button>
+    </view>
+
+    <view class="grid-2">
+      <view>
+        <view class="label">文化分</view>
+        <input class="input" type="digit" value="{{culture}}" data-field="culture" bindinput="onInput" placeholder="例：420" />
+      </view>
+      <view>
+        <view class="label">专业分</view>
+        <input class="input" type="digit" value="{{major}}" data-field="major" bindinput="onInput" placeholder="例：235" />
+      </view>
+    </view>
+
+    <view class="grid-2">
+      <view>
+        <view class="label">综合分</view>
+        <input class="input" type="digit" value="{{score}}" data-field="score" bindinput="onInput" />
+      </view>
+      <view>
+        <view class="label">位次</view>
+        <input class="input" type="number" value="{{rank}}" data-field="rank" bindinput="onInput" placeholder="可选" />
+      </view>
+    </view>
+
+    <view class="formula">2024/2025 规则：综合分 = 文化分 x 50% + 专业统考分 x 2.5 x 50%</view>
+  </view>
+
+  <view class="panel">
+    <view class="label">推荐模式</view>
+    <view class="seg">
+      <button class="{{recommendMode === 'score' ? 'active' : ''}}" data-mode="score" bindtap="setRecommendMode">按分数</button>
+      <button class="{{recommendMode === 'rank' ? 'active' : ''}}" data-mode="rank" bindtap="setRecommendMode">按位次</button>
+    </view>
+    <view class="formula">已内置 2025 历史/物理组一分一段表；按位次模式只需导入 2026 表来换算今年等位分。</view>
+    <view wx:if="{{recommendMode === 'rank'}}" class="rank-inputs">
+      <view class="label">2026 一分一段表</view>
+      <textarea class="textarea" value="{{rankText2026}}" data-field="rankText2026" bindinput="onInput" placeholder="格式：score,rank,count；每行一条"></textarea>
+      <button class="secondary-btn clear-rank" bindtap="clearRankTables">清空2026位次表</button>
+    </view>
+  </view>
+
+  <view class="panel">
+    <view class="row between option-row">
+      <text>包含待补数据</text>
+      <switch checked="{{includeUnverified}}" data-field="includeUnverified" bindchange="onSwitch" />
+    </view>
+    <view class="row between option-row">
+      <text>包含民办/独立学院</text>
+      <switch checked="{{includePrivate}}" data-field="includePrivate" bindchange="onSwitch" />
+    </view>
+    <view class="row between option-row">
+      <text>包含中外合作</text>
+      <switch checked="{{includeCoop}}" data-field="includeCoop" bindchange="onSwitch" />
+    </view>
+    <view class="row between option-row">
+      <text>省内院校优先</text>
+      <switch checked="{{preferFujian}}" data-field="preferFujian" bindchange="onSwitch" />
+    </view>
+    <view class="row between option-row">
+      <text>只看公办</text>
+      <switch checked="{{onlyPublic}}" data-field="onlyPublic" bindchange="onSwitch" />
+    </view>
+    <view class="row between option-row">
+      <text>只看 985/211/双一流</text>
+      <switch checked="{{onlyHigh}}" data-field="onlyHigh" bindchange="onSwitch" />
+    </view>
+
+    <view class="label">关键词</view>
+    <input class="input" value="{{keyword}}" data-field="keyword" bindinput="onInput" placeholder="院校、省份、专业方向" />
+  </view>
+
+  <view class="panel summary-panel">
+    <view>
+      <view class="subtle">当前院校池</view>
+      <view class="big">{{preview.poolCount}}</view>
+    </view>
+    <view>
+      <view class="subtle">预计生成</view>
+      <view class="big">{{preview.count}}</view>
+    </view>
+    <view>
+      <view class="subtle">判断方式</view>
+      <view class="big small">{{preview.mode}}</view>
+    </view>
+  </view>
+  <view wx:if="{{preview.notice}}" class="panel">
+    <view class="subtle">{{preview.notice}}</view>
+  </view>
+
+  <button class="primary-btn generate" bindtap="generate">生成志愿建议</button>
+</view>
