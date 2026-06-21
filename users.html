@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>用户授权管理</title>
+  <style>
+    :root { --ink:#172026; --muted:#63707c; --line:#dbe3ea; --bg:#f3f6f5; --brand:#1f5f8f; --green:#18755a; --red:#b8413b; --amber:#a96313; }
+    * { box-sizing:border-box; }
+    body { margin:0; color:var(--ink); background:var(--bg); font-family:"Microsoft YaHei","PingFang SC",Arial,sans-serif; letter-spacing:0; }
+    body.auth-pending > :not(.auth-gate), body.auth-denied > :not(.auth-gate) { visibility:hidden; }
+    .auth-gate { position:fixed; inset:0; z-index:20; display:none; place-items:center; padding:24px; background:var(--bg); }
+    body.auth-pending .auth-gate, body.auth-denied .auth-gate { display:grid; }
+    .auth-gate > div { width:min(100%,440px); padding:24px; border:1px solid var(--line); border-radius:8px; background:#fff; text-align:center; }
+    header { position:sticky; top:0; z-index:10; border-bottom:1px solid var(--line); background:rgba(255,255,255,.95); }
+    .topbar { max-width:1280px; margin:auto; padding:12px 18px; display:flex; align-items:center; justify-content:space-between; gap:14px; }
+    .brand { display:flex; align-items:center; gap:10px; }
+    .mark { width:36px; height:36px; display:grid; place-items:center; border-radius:6px; background:#173f63; color:#fff; font-weight:800; }
+    h1 { margin:0; font-size:19px; }
+    .sub { margin-top:2px; color:var(--muted); font-size:12px; }
+    .actions, .row-actions { display:flex; align-items:center; flex-wrap:wrap; gap:8px; }
+    main { max-width:1280px; margin:auto; padding:20px 18px 40px; }
+    section { padding:20px 0; border-bottom:1px solid var(--line); }
+    section:first-child { padding-top:0; }
+    h2 { margin:0 0 14px; font-size:18px; }
+    .form-grid { display:grid; grid-template-columns:1.4fr 1fr 1fr 1fr auto; gap:12px; align-items:end; }
+    label { display:block; margin-bottom:6px; color:var(--muted); font-size:13px; font-weight:700; }
+    input, select { width:100%; height:40px; border:1px solid #bdc9d2; border-radius:6px; padding:0 10px; background:#fff; font:inherit; }
+    button, .button { min-height:38px; border:1px solid #c9d3db; border-radius:6px; padding:8px 12px; background:#fff; color:var(--ink); font:inherit; font-weight:700; cursor:pointer; text-decoration:none; }
+    button.primary { border-color:var(--brand); background:var(--brand); color:#fff; }
+    button.danger { border-color:#e4b6b2; color:var(--red); }
+    button:disabled { opacity:.5; cursor:wait; }
+    .metrics { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:16px; }
+    .metric { padding:14px; border-left:3px solid var(--brand); background:#fff; }
+    .metric strong { display:block; font-size:22px; }
+    .metric span { color:var(--muted); font-size:12px; }
+    .toolbar { display:flex; gap:10px; margin-bottom:12px; }
+    .toolbar input { max-width:360px; }
+    .table-wrap { overflow:auto; border:1px solid var(--line); background:#fff; }
+    table { width:100%; min-width:940px; border-collapse:collapse; }
+    th, td { padding:11px 10px; border-bottom:1px solid var(--line); text-align:left; font-size:13px; vertical-align:middle; }
+    th { position:sticky; top:0; background:#eef3f5; color:#43515d; }
+    .badge { display:inline-block; padding:3px 7px; border-radius:4px; background:#edf1f4; font-size:12px; }
+    .badge.active { background:#e4f3ec; color:var(--green); }
+    .badge.expired, .badge.inactive { background:#fae8e7; color:var(--red); }
+    #status { min-height:24px; margin:10px 0; color:var(--muted); }
+    #status.error { color:var(--red); }
+    dialog { width:min(92vw,440px); border:1px solid var(--line); border-radius:8px; padding:22px; color:var(--ink); }
+    dialog::backdrop { background:rgba(23,32,38,.42); }
+    dialog h2 { margin-bottom:16px; }
+    dialog .actions { justify-content:flex-end; margin-top:18px; }
+    @media (max-width:900px) { .form-grid { grid-template-columns:1fr 1fr; } .metrics { grid-template-columns:1fr 1fr; } }
+    @media (max-width:560px) { .topbar { align-items:flex-start; } .form-grid { grid-template-columns:1fr; } .metrics { grid-template-columns:1fr 1fr; } .actions .button { font-size:12px; padding:7px; } }
+  </style>
+</head>
+<body class="auth-pending">
+  <div class="auth-gate"><div><h2 id="gateTitle">正在验证管理员权限</h2><p id="gateMessage">请稍候...</p></div></div>
+  <header>
+    <div class="topbar">
+      <div class="brand"><div class="mark">权</div><div><h1>用户授权管理</h1><div class="sub">账号、状态、有效期与密码</div></div></div>
+      <div class="actions"><a class="button" href="./admin.html">数据后台</a><a class="button" href="./index.html">考生端</a><button id="signOutBtn" type="button">退出</button></div>
+    </div>
+  </header>
+  <main>
+    <section>
+      <h2>创建授权账号</h2>
+      <form id="createForm" class="form-grid" novalidate>
+        <div><label for="email">邮箱</label><input id="email" type="email" required /></div>
+        <div><label for="displayName">姓名/备注</label><input id="displayName" /></div>
+        <div><label for="password">初始密码</label><input id="password" type="password" minlength="8" required /></div>
+        <div><label for="expiresAt">授权到期</label><input id="expiresAt" type="datetime-local" /></div>
+        <div><label for="generationLimit">可生成次数</label><input id="generationLimit" type="number" min="0" step="1" value="3" required /></div>
+        <div><label><input id="unlimitedQuota" type="checkbox" /> 不限生成次数</label></div>
+        <button class="primary" id="createBtn" type="submit">创建账号</button>
+      </form>
+      <div id="status" role="status" aria-live="polite"></div>
+    </section>
+    <section>
+      <div class="metrics">
+        <div class="metric"><strong id="totalCount">0</strong><span>全部账号</span></div>
+        <div class="metric"><strong id="activeCount">0</strong><span>有效授权</span></div>
+        <div class="metric"><strong id="expiredCount">0</strong><span>已到期</span></div>
+        <div class="metric"><strong id="disabledCount">0</strong><span>已停用</span></div>
+      </div>
+      <div class="toolbar"><input id="keyword" type="search" placeholder="搜索邮箱或姓名" /><button id="refreshBtn" type="button">刷新</button></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>用户</th><th>角色</th><th>状态</th><th>生成次数</th><th>授权到期</th><th>最近登录</th><th>操作</th></tr></thead>
+          <tbody id="rows"><tr><td colspan="7">正在加载...</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="expiryDialog">
+    <form id="expiryForm">
+      <h2>调整授权有效期</h2>
+      <input id="expiryUserId" type="hidden" />
+      <label for="newExpiresAt">新的到期时间</label><input id="newExpiresAt" type="datetime-local" />
+      <div class="actions"><button id="clearExpiryBtn" type="button">设为长期</button><button type="button" data-close="expiryDialog">取消</button><button class="primary" type="submit">保存</button></div>
+    </form>
+  </dialog>
+  <dialog id="passwordDialog">
+    <form id="passwordForm">
+      <h2>设置临时密码</h2>
+      <input id="passwordUserId" type="hidden" />
+      <label for="newPassword">新密码（至少 8 位）</label><input id="newPassword" type="password" minlength="8" required />
+      <div class="actions"><button type="button" data-close="passwordDialog">取消</button><button class="primary" type="submit">确认重置</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="quotaDialog">
+    <form id="quotaForm">
+      <h2>设置生成次数</h2>
+      <input id="quotaUserId" type="hidden" />
+      <label for="quotaLimit">总次数</label><input id="quotaLimit" type="number" min="0" step="1" required />
+      <label><input id="quotaUnlimited" type="checkbox" /> 不限次数</label>
+      <label><input id="quotaResetUsed" type="checkbox" /> 同时将已使用次数归零</label>
+      <div class="actions"><button type="button" data-close="quotaDialog">取消</button><button class="primary" type="submit">保存</button></div>
+    </form>
+  </dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabase-config.js"></script>
+  <script src="./auth.js"></script>
+  <script>
+    const state = { users: [], callerId: "" };
+    const $ = id => document.getElementById(id);
+    const escapeHtml = value => String(value ?? "").replace(/[&<>'"]/g, char => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", "'":"&#39;", '"':"&quot;" })[char]);
+
+    function showStatus(message, error = false) {
+      $("status").textContent = message;
+      $("status").className = error ? "error" : "";
+    }
+
+    async function invoke(action, values = {}) {
+      const session = await FujianArtAuth.getSession();
+      if (!session) throw new Error("登录状态已失效，请重新登录");
+      const config = window.FujianArtSupabaseConfig;
+      if (!config?.url || !config?.anonKey) throw new Error("Supabase 配置不完整");
+      let response;
+      try {
+        response = await fetch(config.url + "/functions/v1/user-admin", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            apikey: config.anonKey,
+            Authorization: "Bearer " + session.access_token
+          },
+          body: JSON.stringify({ action, ...values })
+        });
+      } catch (error) {
+        throw new Error("无法连接用户管理服务，请确认 user-admin Edge Function 已部署");
+      }
+      const raw = await response.text();
+      let data = {};
+      try { data = raw ? JSON.parse(raw) : {}; } catch (_) {}
+      if (!response.ok) {
+        if (response.status === 404) throw new Error("用户管理服务尚未部署，请部署 user-admin Edge Function");
+        throw new Error(data.error || raw || ("服务请求失败（" + response.status + "）"));
+      }
+      return data;
+    }
+
+    function formatDate(value) {
+      if (!value) return "长期";
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? "-" : date.toLocaleString("zh-CN", { hour12: false });
+    }
+
+    function toLocalInput(value) {
+      if (!value) return "";
+      const date = new Date(value);
+      const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+      return local.toISOString().slice(0, 16);
+    }
+
+    function userStatus(user) {
+      if (!user.active) return { key: "inactive", label: "已停用" };
+      if (user.expires_at && new Date(user.expires_at).getTime() <= Date.now()) return { key: "expired", label: "已到期" };
+      return { key: "active", label: "有效" };
+    }
+
+    function render() {
+      const keyword = $("keyword").value.trim().toLowerCase();
+      const visible = state.users.filter(user => `${user.email} ${user.display_name || ""}`.toLowerCase().includes(keyword));
+      $("totalCount").textContent = state.users.length;
+      $("activeCount").textContent = state.users.filter(user => userStatus(user).key === "active").length;
+      $("expiredCount").textContent = state.users.filter(user => userStatus(user).key === "expired").length;
+      $("disabledCount").textContent = state.users.filter(user => userStatus(user).key === "inactive").length;
+      $("rows").innerHTML = visible.length ? visible.map(user => {
+        const status = userStatus(user);
+        const isSelf = user.id === state.callerId;
+        return `<tr>
+          <td><strong>${escapeHtml(user.display_name || user.email)}</strong><br><span class="sub">${escapeHtml(user.email)}</span></td>
+          <td><span class="badge">${escapeHtml(user.role || "user")}</span></td>
+          <td><span class="badge ${status.key}">${status.label}</span></td>
+          <td>${user.unlimited ? "不限" : `${Number(user.generation_used || 0)} / ${Number(user.generation_limit || 0)}`}</td>
+          <td>${escapeHtml(formatDate(user.expires_at))}</td>
+          <td>${escapeHtml(user.lastSignInAt ? formatDate(user.lastSignInAt) : "尚未登录")}</td>
+          <td><div class="row-actions">
+            <button data-action="quota" data-id="${user.id}" type="button">次数</button>
+            <button data-action="expiry" data-id="${user.id}" type="button">续期</button>
+            <button data-action="password" data-id="${user.id}" type="button">重置密码</button>
+            <button class="${user.active ? "danger" : ""}" data-action="toggle" data-id="${user.id}" type="button" ${isSelf ? "disabled" : ""}>${user.active ? "停用" : "启用"}</button>
+          </div></td>
+        </tr>`;
+      }).join("") : '<tr><td colspan="7">没有匹配的账号</td></tr>';
+    }
+
+    async function loadUsers() {
+      $("refreshBtn").disabled = true;
+      try {
+        const data = await invoke("list");
+        state.users = data.users || [];
+        state.callerId = data.callerId || "";
+        render();
+        if (data.quotaWarning) {
+          showStatus("账号已加载，但生成次数数据暂不可用：" + data.quotaWarning, true);
+        }
+      } catch (error) {
+        showStatus(error.message, true);
+        $("rows").innerHTML = `<tr><td colspan="7">${escapeHtml(error.message)}</td></tr>`;
+      } finally {
+        $("refreshBtn").disabled = false;
+      }
+    }
+
+    $("createForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      const email = $("email").value.trim().toLowerCase();
+      const password = $("password").value;
+      if (!/^\S+@\S+\.\S+$/.test(email)) { showStatus("请输入有效的邮箱地址。", true); $("email").focus(); return; }
+      if (password.length < 8) { showStatus("初始密码至少需要 8 位。", true); $("password").focus(); return; }
+      $("createBtn").disabled = true;
+      showStatus("正在创建账号...");
+      try {
+        const data = await invoke("create", {
+          email,
+          displayName: $("displayName").value,
+          password,
+          expiresAt: $("expiresAt").value ? new Date($("expiresAt").value).toISOString() : null,
+          generationLimit: Number($("generationLimit").value),
+          unlimited: $("unlimitedQuota").checked
+        });
+        event.target.reset();
+        showStatus(data.warning || "账号已创建并自动确认邮箱。请将初始密码安全地告知用户。", Boolean(data.warning));
+        await loadUsers();
+      } catch (error) {
+        showStatus(error.message, true);
+      } finally {
+        $("createBtn").disabled = false;
+      }
+    });
+
+    $("rows").addEventListener("click", async event => {
+      const button = event.target.closest("button[data-action]");
+      if (!button) return;
+      const user = state.users.find(item => item.id === button.dataset.id);
+      if (!user) return;
+      if (button.dataset.action === "quota") {
+        $("quotaUserId").value = user.id;
+        $("quotaLimit").value = Number(user.generation_limit || 0);
+        $("quotaUnlimited").checked = Boolean(user.unlimited);
+        $("quotaResetUsed").checked = false;
+        $("quotaDialog").showModal();
+      } else if (button.dataset.action === "expiry") {
+        $("expiryUserId").value = user.id;
+        $("newExpiresAt").value = toLocalInput(user.expires_at);
+        $("expiryDialog").showModal();
+      } else if (button.dataset.action === "password") {
+        $("passwordUserId").value = user.id;
+        $("newPassword").value = "";
+        $("passwordDialog").showModal();
+      } else if (button.dataset.action === "toggle") {
+        button.disabled = true;
+        try {
+          await invoke("update", { userId: user.id, active: !user.active });
+          await loadUsers();
+        } catch (error) { showStatus(error.message, true); button.disabled = false; }
+      }
+    });
+
+    $("expiryForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      try {
+        const value = $("newExpiresAt").value;
+        await invoke("update", { userId: $("expiryUserId").value, expiresAt: value ? new Date(value).toISOString() : null });
+        $("expiryDialog").close();
+        await loadUsers();
+      } catch (error) { showStatus(error.message, true); }
+    });
+    $("clearExpiryBtn").addEventListener("click", () => { $("newExpiresAt").value = ""; });
+
+    $("passwordForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      try {
+        await invoke("resetPassword", { userId: $("passwordUserId").value, password: $("newPassword").value });
+        $("passwordDialog").close();
+        showStatus("临时密码已更新。");
+      } catch (error) { showStatus(error.message, true); }
+    });
+
+    $("quotaForm").addEventListener("submit", async event => {
+      event.preventDefault();
+      try {
+        await invoke("quota", {
+          userId: $("quotaUserId").value,
+          generationLimit: Number($("quotaLimit").value),
+          unlimited: $("quotaUnlimited").checked,
+          resetUsed: $("quotaResetUsed").checked
+        });
+        $("quotaDialog").close();
+        showStatus("生成次数已更新。");
+        await loadUsers();
+      } catch (error) { showStatus(error.message, true); }
+    });
+
+    document.querySelectorAll("[data-close]").forEach(button => button.addEventListener("click", () => $(button.dataset.close).close()));
+    $("keyword").addEventListener("input", render);
+    $("refreshBtn").addEventListener("click", loadUsers);
+    $("signOutBtn").addEventListener("click", FujianArtAuth.signOut);
+
+    (async function initialize() {
+      const result = await FujianArtAuth.guard({ admin: true });
+      if (!result.ok) {
+        document.body.classList.remove("auth-pending");
+        document.body.classList.add("auth-denied");
+        $("gateTitle").textContent = "无用户管理权限";
+        $("gateMessage").textContent = result.reason === "admin" ? "当前账号不是管理员。" : "授权验证失败，请重新登录。";
+        return;
+      }
+      document.body.classList.remove("auth-pending");
+      await loadUsers();
+    })();
+  </script>
+</body>
+</html>

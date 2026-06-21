@@ -1,0 +1,982 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>福建美术与设计类志愿助手后台</title>
+  <style>
+    :root {
+      --ink: #172026;
+      --muted: #63707c;
+      --line: #dbe3ea;
+      --panel: #ffffff;
+      --bg: #f3f6f5;
+      --brand: #1f5f8f;
+      --brand-deep: #173f63;
+      --green: #18755a;
+      --amber: #a96313;
+      --red: #b8413b;
+      --cyan: #0f6d7a;
+      --shadow: 0 14px 38px rgba(23, 32, 38, 0.08);
+      --radius: 8px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: var(--bg);
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+      letter-spacing: 0;
+    }
+
+    body.auth-pending > :not(.auth-gate) { visibility: hidden; }
+    .auth-gate { position: fixed; inset: 0; z-index: 9999; display: none; place-items: center; padding: 24px; background: var(--bg); }
+    body.auth-pending .auth-gate, body.auth-denied .auth-gate { display: grid; }
+    .auth-gate-card { width: min(100%, 440px); padding: 24px; border: 1px solid var(--line); border-radius: 8px; background: #fff; text-align: center; box-shadow: var(--shadow); }
+    .auth-gate-card h2 { margin: 0 0 10px; font-size: 20px; }
+    .auth-gate-card p { margin: 0; color: var(--muted); line-height: 1.7; }
+
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(255, 255, 255, 0.94);
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(14px);
+    }
+
+    .topbar {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .mark {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      background: var(--brand-deep);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      flex: 0 0 auto;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 19px;
+      line-height: 1.25;
+    }
+
+    .sub {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    main {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 18px;
+      display: grid;
+      grid-template-columns: 330px minmax(0, 1fr);
+      gap: 18px;
+    }
+
+    aside, section, .panel, .metric, .table-panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    aside {
+      align-self: start;
+      position: sticky;
+      top: 74px;
+      max-height: calc(100vh - 92px);
+      overflow: auto;
+    }
+
+    .panel {
+      box-shadow: none;
+      border-left: 0;
+      border-right: 0;
+      border-top: 0;
+      border-radius: 0;
+      padding: 16px;
+    }
+
+    .panel:last-child { border-bottom: 0; }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 16px;
+    }
+
+    label {
+      display: block;
+      margin: 12px 0 6px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      min-height: 38px;
+      border: 1px solid #c9d3db;
+      border-radius: 6px;
+      color: var(--ink);
+      background: #fff;
+      padding: 8px 10px;
+    }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical;
+      line-height: 1.45;
+      font-size: 12px;
+      font-family: Consolas, "Microsoft YaHei", monospace;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .btn {
+      border: 1px solid transparent;
+      border-radius: 6px;
+      min-height: 38px;
+      padding: 8px 12px;
+      cursor: pointer;
+      font-weight: 700;
+      background: #fff;
+      color: var(--brand);
+      border-color: #b9c9d7;
+    }
+
+    .btn.primary {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #fff;
+    }
+
+    .btn.danger {
+      color: var(--red);
+      border-color: #e1b7b4;
+    }
+
+    .btn.ghost {
+      color: var(--ink);
+      border-color: #c9d3db;
+    }
+
+    .btnrow {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .metric {
+      padding: 14px;
+      min-height: 84px;
+    }
+
+    .metric span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 24px;
+      line-height: 1;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: minmax(220px, 1fr) 150px 150px 150px;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .table-panel {
+      overflow: hidden;
+    }
+
+    .table-head {
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .table-wrap {
+      overflow: auto;
+      max-height: calc(100vh - 275px);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 980px;
+      font-size: 13px;
+    }
+
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #edf1f4;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #f8faf9;
+      color: #52606b;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    tr.active-row {
+      background: #f1f7f4;
+    }
+
+    .school {
+      font-weight: 700;
+      color: var(--brand-deep);
+    }
+
+    .muted { color: var(--muted); }
+    .small { font-size: 12px; }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      background: #eef1f3;
+      color: #52606b;
+      margin: 0 4px 4px 0;
+    }
+
+    .pill.ok { background: #e4f4ee; color: var(--green); }
+    .pill.warn { background: #fff1d7; color: var(--amber); }
+    .pill.high { background: #e7f0f8; color: var(--brand); }
+    .pill.coop { background: #e9f6f8; color: var(--cyan); }
+    .pill.private { background: #f9e9e8; color: var(--red); }
+
+    .row-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .mini {
+      min-height: 30px;
+      padding: 5px 8px;
+      font-size: 12px;
+    }
+
+    .audit {
+      display: grid;
+      gap: 10px;
+      max-height: 220px;
+      overflow: auto;
+    }
+
+    .audit-item {
+      border: 1px solid #edf1f4;
+      border-radius: 6px;
+      padding: 10px;
+      background: #fbfcfc;
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .notice {
+      background: #eef7f8;
+      color: #0f6d7a;
+      border: 1px solid #cce6ea;
+      border-radius: 6px;
+      padding: 10px;
+      line-height: 1.5;
+      font-size: 13px;
+    }
+
+    .hidden { display: none !important; }
+
+    @media (max-width: 980px) {
+      main {
+        grid-template-columns: 1fr;
+      }
+      aside {
+        position: static;
+        max-height: none;
+      }
+      .metrics {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .toolbar {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .topbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      .top-actions {
+        width: 100%;
+      }
+      .top-actions .btn {
+        flex: 1;
+      }
+      .metrics, .toolbar, .grid-2, .btnrow {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body class="auth-pending">
+  <div class="auth-gate" id="authGate">
+    <div class="auth-gate-card">
+      <h2 id="authGateTitle">正在验证管理员权限</h2>
+      <p id="authGateMessage">请稍候...</p>
+    </div>
+  </div>
+  <header>
+    <div class="topbar">
+      <div class="brand">
+        <div class="mark">管</div>
+        <div>
+          <h1>福建美术与设计类志愿助手后台</h1>
+          <div class="sub" id="versionText">读取数据中</div>
+        </div>
+      </div>
+      <div class="top-actions">
+        <a class="btn ghost" href="./index.html">返回考生端</a>
+        <a class="btn ghost" href="./users.html">用户授权</a>
+        <button class="btn ghost" id="signOutBtn" type="button" hidden>退出登录</button>
+        <button class="btn" id="exportBtn" type="button">导出 JSON</button>
+        <button class="btn primary" id="newBtn" type="button">新增记录</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <aside>
+      <div class="panel">
+        <h2>数据编辑</h2>
+        <input id="recordId" type="hidden" />
+        <label for="schoolInput">院校</label>
+        <input id="schoolInput" placeholder="例如：福州大学" />
+        <div class="grid-2">
+          <div>
+            <label for="provinceInput">省份</label>
+            <input id="provinceInput" value="福建" />
+          </div>
+          <div>
+            <label for="levelInput">层级</label>
+            <input id="levelInput" value="公办" />
+          </div>
+        </div>
+        <div class="grid-2">
+          <div>
+            <label for="yearInput">年份</label>
+            <input id="yearInput" type="number" value="2025" />
+          </div>
+          <div>
+            <label for="subjectInput">科目</label>
+            <select id="subjectInput">
+              <option value="both">不限/待分</option>
+              <option value="history">历史</option>
+              <option value="physics">物理</option>
+            </select>
+          </div>
+        </div>
+        <label for="infoInput">专业/计划信息</label>
+        <textarea id="infoInput" placeholder="例如：设计学类，录取69"></textarea>
+        <div class="grid-2">
+          <div>
+            <label for="minInput">最低分</label>
+            <input id="minInput" type="number" step="0.01" placeholder="待补可留空" />
+          </div>
+          <div>
+            <label for="maxInput">最高分</label>
+            <input id="maxInput" type="number" step="0.01" placeholder="可选" />
+          </div>
+        </div>
+        <label for="statusInput">状态</label>
+        <input id="statusInput" value="待复核" />
+        <label for="tagsInput">标签</label>
+        <input id="tagsInput" value="public,plan" />
+        <label for="admissionUrlInput">官方本科招生网</label>
+        <input id="admissionUrlInput" type="url" placeholder="https://学校官方招生域名/" />
+        <div class="grid-2">
+          <div>
+            <label for="urlStatusInput">网址核验状态</label>
+            <select id="urlStatusInput">
+              <option value="pending">待核验</option>
+              <option value="verified">官方已核验</option>
+              <option value="disabled">停止展示</option>
+            </select>
+          </div>
+          <div>
+            <label for="urlCheckedAtInput">核验日期</label>
+            <input id="urlCheckedAtInput" type="date" />
+          </div>
+        </div>
+        <button class="btn ghost" id="testAdmissionUrlBtn" type="button">测试招生网</button>
+        <div class="btnrow">
+          <button class="btn primary" id="saveBtn" type="button">保存</button>
+          <button class="btn ghost" id="clearBtn" type="button">清空</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>导入数据</h2>
+        <div class="notice">粘贴院校 JSON 数组后会覆盖当前浏览器本地管理数据，不会改动源文件。</div>
+        <label for="importText">JSON</label>
+        <textarea id="importText" placeholder='[{"school":"示例大学",...}]'></textarea>
+        <div class="btnrow">
+          <button class="btn" id="importBtn" type="button">导入</button>
+          <button class="btn danger" id="resetBtn" type="button">恢复内置</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>2026 一分一段表管理</h2>
+        <div class="notice">仅管理员可维护；考生端不会显示导入区域，并会按历史组/物理组自动读取。</div>
+        <label for="rankSubjectAdmin">科类</label>
+        <select id="rankSubjectAdmin">
+          <option value="history">历史组</option>
+          <option value="physics">物理组</option>
+        </select>
+        <label for="rankDataAdmin">综合分、位次、本分人数</label>
+        <textarea id="rankDataAdmin" placeholder="score,rank,count&#10;550,1180,42&#10;549.75,1221,37"></textarea>
+        <div class="notice" id="rankAdminStatus">当前科类尚未导入 2026 数据。</div>
+        <div class="btnrow">
+          <button class="btn primary" id="saveRankBtn" type="button">保存位次表</button>
+          <button class="btn danger" id="clearRankAdminBtn" type="button">清空当前科类</button>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>维护记录</h2>
+        <div class="audit" id="auditList"></div>
+      </div>
+    </aside>
+
+    <section>
+      <div class="panel">
+        <div class="metrics">
+          <div class="metric"><span>总记录</span><strong id="totalMetric">0</strong></div>
+          <div class="metric"><span>已核/官方已核</span><strong id="verifiedMetric">0</strong></div>
+          <div class="metric"><span>待补/待复核</span><strong id="pendingMetric">0</strong></div>
+          <div class="metric"><span>省内记录</span><strong id="fujianMetric">0</strong></div>
+          <div class="metric"><span>高层级</span><strong id="highMetric">0</strong></div>
+        </div>
+        <div class="toolbar">
+          <input id="keywordInput" placeholder="搜索院校、省份、专业、状态" />
+          <select id="subjectFilter">
+            <option value="">全部科目</option>
+            <option value="history">历史</option>
+            <option value="physics">物理</option>
+            <option value="both">不限/待分</option>
+          </select>
+          <select id="statusFilter">
+            <option value="">全部状态</option>
+            <option value="verified">已核</option>
+            <option value="pending">待补/待复核</option>
+            <option value="plan">计划/待分数</option>
+          </select>
+          <select id="tagFilter">
+            <option value="">全部标签</option>
+            <option value="public">公办</option>
+            <option value="private">民办/独立</option>
+            <option value="coop">中外合作</option>
+            <option value="985">985</option>
+            <option value="211">211</option>
+            <option value="double">双一流</option>
+            <option value="plan">计划</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-panel">
+        <div class="table-head">
+          <div>
+            <strong>院校/专业数据</strong>
+            <span class="muted small" id="filteredText">显示 0 条</span>
+          </div>
+          <div class="muted small">本页为网页版后台原型，当前保存到浏览器 localStorage。</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>院校</th>
+                <th>省份/层级</th>
+                <th>专业/计划</th>
+                <th>科目</th>
+                <th>分数</th>
+                <th>状态</th>
+                <th>招生网</th>
+                <th>标签</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabase-config.js"></script>
+  <script src="./auth.js"></script>
+  <script src="./shared/fujian-art-admission-sites.js"></script>
+  <script>
+    (async function initializeAdminAuthorization() {
+      const result = await FujianArtAuth.guard({ admin: true });
+      const body = document.body;
+      if (!result.ok) {
+        body.classList.remove("auth-pending");
+        body.classList.add("auth-denied");
+        document.getElementById("authGateTitle").textContent = "无后台访问权限";
+        const messages = {
+          admin: "当前账号不是管理员。",
+          config: "授权已启用，但 Supabase 配置不完整。",
+          inactive: "该管理员账号已停用。",
+          expired: "该管理员账号授权已到期。",
+          network: "无法连接授权服务，请检查网络后刷新页面。"
+        };
+        document.getElementById("authGateMessage").textContent = messages[result.reason] || "权限验证失败。";
+        return;
+      }
+      body.classList.remove("auth-pending");
+      if (!result.bypass) {
+        const button = document.getElementById("signOutBtn");
+        button.hidden = false;
+        button.addEventListener("click", FujianArtAuth.signOut);
+      }
+    })();
+  </script>
+  <script src="./shared/fujian-art-data.js"></script>
+  <script>
+    const STORAGE_KEY = "fujian_art_web_admin_colleges";
+    const AUDIT_KEY = "fujian_art_web_admin_audit";
+    const RANK_2026_STORAGE_PREFIX = "fujian_art_rank_2026_";
+    const $ = id => document.getElementById(id);
+
+    let baseColleges = window.FujianArtData.colleges.map((item, index) => withId(item, index));
+    let colleges = loadColleges();
+    let selectedId = "";
+
+    function withId(item, index) {
+      const verifiedSite = window.FujianArtAdmissionSites?.getSite(item.school);
+      return {
+        ...item,
+        admissionUrl: item.admissionUrl || verifiedSite?.url || "",
+        urlStatus: item.urlStatus || verifiedSite?.status || "pending",
+        urlCheckedAt: item.urlCheckedAt || verifiedSite?.checkedAt || "",
+        id: item.id || [item.school, item.year, item.subject, item.info, index].join("|")
+      };
+    }
+
+    function fmt(value) {
+      if (value == null || value === "") return "待补";
+      return Number(value).toFixed(2).replace(/\.00$/, "");
+    }
+
+    function loadColleges() {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (!stored) return [...baseColleges];
+      try {
+        const parsed = JSON.parse(stored);
+        return Array.isArray(parsed) ? parsed.map((item, index) => withId(item, index)) : [...baseColleges];
+      } catch (error) {
+        return [...baseColleges];
+      }
+    }
+
+    function saveColleges() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(colleges));
+    }
+
+    function loadAudit() {
+      try {
+        return JSON.parse(localStorage.getItem(AUDIT_KEY) || "[]");
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function addAudit(action, detail) {
+      const logs = loadAudit();
+      logs.unshift({ action, detail, time: new Date().toLocaleString("zh-CN") });
+      localStorage.setItem(AUDIT_KEY, JSON.stringify(logs.slice(0, 80)));
+      renderAudit();
+    }
+
+    function parseRankAdminData(text) {
+      return text.trim().split(/\r?\n/).map(line => line.trim()).filter(Boolean).map(line => {
+        const parts = line.split(/[,，\t\s]+/).filter(Boolean);
+        const score = Number(parts[0]);
+        const rank = Number(parts[1]);
+        const count = Number(parts[2] || "");
+        if (!Number.isFinite(score) || !Number.isFinite(rank)) return null;
+        return { score, rank, count: Number.isFinite(count) ? count : "" };
+      }).filter(Boolean);
+    }
+
+    function loadRankAdminData() {
+      const subject = $("rankSubjectAdmin").value;
+      const text = localStorage.getItem(RANK_2026_STORAGE_PREFIX + subject) || "";
+      const rows = parseRankAdminData(text);
+      $("rankDataAdmin").value = text;
+      $("rankAdminStatus").textContent = rows.length
+        ? `${subject === "history" ? "历史组" : "物理组"}已保存 ${rows.length} 行。`
+        : `当前${subject === "history" ? "历史组" : "物理组"}尚未导入 2026 数据。`;
+    }
+
+    function saveRankAdminData() {
+      const subject = $("rankSubjectAdmin").value;
+      const text = $("rankDataAdmin").value.trim();
+      const rows = parseRankAdminData(text);
+      if (!rows.length) {
+        alert("未识别到有效数据，请检查综合分和位次两列。");
+        return;
+      }
+      localStorage.setItem(RANK_2026_STORAGE_PREFIX + subject, text);
+      addAudit("保存一分一段表", `${subject === "history" ? "历史组" : "物理组"} · ${rows.length} 行`);
+      loadRankAdminData();
+    }
+
+    function renderAudit() {
+      const logs = loadAudit().slice(0, 20);
+      $("auditList").innerHTML = logs.length ? logs.map(log => `
+        <div class="audit-item">
+          <strong>${escapeHtml(log.action)}</strong>
+          <div>${escapeHtml(log.detail)}</div>
+          <div class="muted">${escapeHtml(log.time)}</div>
+        </div>
+      `).join("") : `<div class="muted small">暂无维护记录</div>`;
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "\"": "&quot;",
+        "'": "&#39;"
+      }[char]));
+    }
+
+    function subjectText(subject) {
+      return subject === "history" ? "历史" : subject === "physics" ? "物理" : "不限/待分";
+    }
+
+    function statusKind(item) {
+      const status = item.status || "";
+      if (status.includes("已核")) return "verified";
+      if (status.includes("计划") || status.includes("待分数")) return "plan";
+      return "pending";
+    }
+
+    function tagPills(item) {
+      return (item.tags || []).map(tag => {
+        const cls = tag === "private" ? "private" : tag === "coop" ? "coop" : ["985", "211", "double"].includes(tag) ? "high" : "";
+        return `<span class="pill ${cls}">${escapeHtml(tag)}</span>`;
+      }).join("");
+    }
+
+    function filteredRows() {
+      const keyword = $("keywordInput").value.trim().toLowerCase();
+      const subject = $("subjectFilter").value;
+      const status = $("statusFilter").value;
+      const tag = $("tagFilter").value;
+      return colleges.filter(item => {
+        if (subject && item.subject !== subject) return false;
+        if (status && statusKind(item) !== status) return false;
+        if (tag && !(item.tags || []).includes(tag)) return false;
+        if (keyword) {
+          const hay = [item.school, item.province, item.level, item.info, item.status, (item.tags || []).join(" ")].join(" ").toLowerCase();
+          if (!hay.includes(keyword)) return false;
+        }
+        return true;
+      });
+    }
+
+    function renderMetrics() {
+      $("totalMetric").textContent = colleges.length;
+      $("verifiedMetric").textContent = colleges.filter(item => statusKind(item) === "verified").length;
+      $("pendingMetric").textContent = colleges.filter(item => statusKind(item) === "pending").length;
+      $("fujianMetric").textContent = colleges.filter(item => item.province === "福建").length;
+      $("highMetric").textContent = colleges.filter(item => (item.tags || []).some(tag => ["985", "211", "double"].includes(tag))).length;
+    }
+
+    function renderRows() {
+      const rows = filteredRows();
+      $("filteredText").textContent = `显示 ${rows.length} 条`;
+      $("rows").innerHTML = rows.map(item => `
+        <tr class="${item.id === selectedId ? "active-row" : ""}">
+          <td>
+            <div class="school">${escapeHtml(item.school)}</div>
+            <div class="muted small">${escapeHtml(item.year)}</div>
+          </td>
+          <td>${escapeHtml(item.province)}<br><span class="muted">${escapeHtml(item.level)}</span></td>
+          <td>${escapeHtml(item.info)}</td>
+          <td>${subjectText(item.subject)}</td>
+          <td>${fmt(item.min)}${item.max ? `-${fmt(item.max)}` : ""}</td>
+          <td><span class="pill ${statusKind(item) === "verified" ? "ok" : "warn"}">${escapeHtml(item.status)}</span></td>
+          <td>${item.urlStatus === "verified" && item.admissionUrl ? `<a href="${escapeHtml(item.admissionUrl)}" target="_blank" rel="noopener noreferrer">官方招生网</a>` : `<span class="muted">${item.admissionUrl ? "待核验" : "未录入"}</span>`}</td>
+          <td>${tagPills(item)}</td>
+          <td>
+            <div class="row-actions">
+              <button class="btn mini" data-action="edit" data-id="${escapeHtml(item.id)}" type="button">编辑</button>
+              <button class="btn mini danger" data-action="delete" data-id="${escapeHtml(item.id)}" type="button">删除</button>
+            </div>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    function renderAll() {
+      $("versionText").textContent = `数据版本 ${window.FujianArtData.dataVersion} · 当前本地管理 ${colleges.length} 条`;
+      renderMetrics();
+      renderRows();
+      renderAudit();
+    }
+
+    function clearForm() {
+      selectedId = "";
+      $("recordId").value = "";
+      $("schoolInput").value = "";
+      $("provinceInput").value = "福建";
+      $("levelInput").value = "公办";
+      $("yearInput").value = "2025";
+      $("subjectInput").value = "both";
+      $("infoInput").value = "";
+      $("minInput").value = "";
+      $("maxInput").value = "";
+      $("statusInput").value = "待复核";
+      $("tagsInput").value = "public,plan";
+      $("admissionUrlInput").value = "";
+      $("urlStatusInput").value = "pending";
+      $("urlCheckedAtInput").value = "";
+      renderRows();
+    }
+
+    function fillForm(item) {
+      selectedId = item.id;
+      $("recordId").value = item.id;
+      $("schoolInput").value = item.school || "";
+      $("provinceInput").value = item.province || "";
+      $("levelInput").value = item.level || "";
+      $("yearInput").value = item.year || 2025;
+      $("subjectInput").value = item.subject || "both";
+      $("infoInput").value = item.info || "";
+      $("minInput").value = item.min == null ? "" : item.min;
+      $("maxInput").value = item.max == null ? "" : item.max;
+      $("statusInput").value = item.status || "";
+      $("tagsInput").value = (item.tags || []).join(",");
+      $("admissionUrlInput").value = item.admissionUrl || "";
+      $("urlStatusInput").value = item.urlStatus || "pending";
+      $("urlCheckedAtInput").value = item.urlCheckedAt || "";
+      renderRows();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function readForm() {
+      const school = $("schoolInput").value.trim();
+      const info = $("infoInput").value.trim();
+      if (!school || !info) {
+        alert("请填写院校和专业/计划信息");
+        return null;
+      }
+      const id = $("recordId").value || [school, $("yearInput").value, $("subjectInput").value, info, Date.now()].join("|");
+      const minValue = $("minInput").value;
+      const maxValue = $("maxInput").value;
+      const admissionUrl = $("admissionUrlInput").value.trim();
+      if (admissionUrl && !/^https:\/\//i.test(admissionUrl)) {
+        alert("招生网址必须使用 https:// 官方地址");
+        return null;
+      }
+      return {
+        id,
+        school,
+        province: $("provinceInput").value.trim() || "福建",
+        level: $("levelInput").value.trim() || "待补",
+        year: Number($("yearInput").value || 2025),
+        info,
+        subject: $("subjectInput").value,
+        min: minValue === "" ? null : Number(minValue),
+        max: maxValue === "" ? undefined : Number(maxValue),
+        status: $("statusInput").value.trim() || "待复核",
+        admissionUrl,
+        urlStatus: $("urlStatusInput").value,
+        urlCheckedAt: $("urlCheckedAtInput").value,
+        tags: $("tagsInput").value.split(/[,，、\s]+/).map(tag => tag.trim()).filter(Boolean)
+      };
+    }
+
+    function saveRecord() {
+      const record = readForm();
+      if (!record) return;
+      const index = colleges.findIndex(item => item.id === record.id);
+      if (index >= 0) {
+        colleges.splice(index, 1, record);
+        addAudit("更新记录", `${record.school} · ${record.info}`);
+      } else {
+        colleges.unshift(record);
+        addAudit("新增记录", `${record.school} · ${record.info}`);
+      }
+      colleges = colleges.map(item => item.school === record.school ? {
+        ...item,
+        admissionUrl: record.admissionUrl,
+        urlStatus: record.urlStatus,
+        urlCheckedAt: record.urlCheckedAt
+      } : item);
+      selectedId = record.id;
+      saveColleges();
+      renderAll();
+    }
+
+    function deleteRecord(id) {
+      const item = colleges.find(row => row.id === id);
+      if (!item) return;
+      if (!confirm(`确认删除：${item.school} · ${item.info}？`)) return;
+      colleges = colleges.filter(row => row.id !== id);
+      if (selectedId === id) clearForm();
+      saveColleges();
+      addAudit("删除记录", `${item.school} · ${item.info}`);
+      renderAll();
+    }
+
+    function exportJson() {
+      const text = JSON.stringify(colleges, null, 2);
+      navigator.clipboard?.writeText(text);
+      $("importText").value = text;
+      addAudit("导出数据", `复制 ${colleges.length} 条记录到剪贴板`);
+      alert("已复制 JSON 到剪贴板，并填入导入框。");
+    }
+
+    function importJson() {
+      try {
+        const parsed = JSON.parse($("importText").value);
+        if (!Array.isArray(parsed)) throw new Error("not array");
+        colleges = parsed.map((item, index) => withId({
+          ...item,
+          year: Number(item.year || 2025),
+          min: item.min === "" || item.min == null ? null : Number(item.min),
+          max: item.max === "" || item.max == null ? undefined : Number(item.max),
+          tags: Array.isArray(item.tags) ? item.tags : String(item.tags || "").split(/[,，、\s]+/).filter(Boolean)
+        }, index));
+        saveColleges();
+        clearForm();
+        addAudit("导入数据", `导入 ${colleges.length} 条记录`);
+        renderAll();
+      } catch (error) {
+        alert("JSON 格式不正确，请粘贴院校数组。");
+      }
+    }
+
+    function resetData() {
+      if (!confirm("确认恢复到内置共享数据？本浏览器里的后台改动会清空。")) return;
+      localStorage.removeItem(STORAGE_KEY);
+      colleges = [...baseColleges];
+      clearForm();
+      addAudit("恢复内置", `恢复 ${colleges.length} 条记录`);
+      renderAll();
+    }
+
+    ["keywordInput", "subjectFilter", "statusFilter", "tagFilter"].forEach(id => {
+      $(id).addEventListener("input", renderRows);
+      $(id).addEventListener("change", renderRows);
+    });
+
+    $("rows").addEventListener("click", event => {
+      const button = event.target.closest("button[data-action]");
+      if (!button) return;
+      const item = colleges.find(row => row.id === button.dataset.id);
+      if (button.dataset.action === "edit" && item) fillForm(item);
+      if (button.dataset.action === "delete") deleteRecord(button.dataset.id);
+    });
+
+    $("newBtn").addEventListener("click", clearForm);
+    $("clearBtn").addEventListener("click", clearForm);
+    $("saveBtn").addEventListener("click", saveRecord);
+    $("exportBtn").addEventListener("click", exportJson);
+    $("importBtn").addEventListener("click", importJson);
+    $("resetBtn").addEventListener("click", resetData);
+    $("rankSubjectAdmin").addEventListener("change", loadRankAdminData);
+    $("saveRankBtn").addEventListener("click", saveRankAdminData);
+    $("clearRankAdminBtn").addEventListener("click", () => {
+      const subject = $("rankSubjectAdmin").value;
+      if (!confirm(`确认清空 2026 ${subject === "history" ? "历史组" : "物理组"}一分一段表？`)) return;
+      localStorage.removeItem(RANK_2026_STORAGE_PREFIX + subject);
+      addAudit("清空一分一段表", subject === "history" ? "历史组" : "物理组");
+      loadRankAdminData();
+    });
+    $("testAdmissionUrlBtn").addEventListener("click", () => {
+      const url = $("admissionUrlInput").value.trim();
+      if (!/^https:\/\//i.test(url)) {
+        alert("请先填写 https:// 官方招生网址");
+        return;
+      }
+      window.open(url, "_blank", "noopener,noreferrer");
+    });
+
+    renderAll();
+    loadRankAdminData();
+  </script>
+</body>
+</html>
