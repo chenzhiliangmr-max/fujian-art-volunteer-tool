@@ -44,6 +44,27 @@
     .auth-tools { display: flex; align-items: center; justify-content: flex-end; gap: 8px; }
     .auth-user { color: var(--muted); font-size: 12px; }
     .auth-button { border: 1px solid #c9d3db; border-radius: 6px; padding: 7px 10px; background: #fff; color: var(--ink); cursor: pointer; }
+    .auth-link { display: inline-flex; align-items: center; gap: 6px; border-color: #18745c; background: #18745c; color: #fff; text-decoration: none; font-weight: 800; box-shadow: 0 4px 12px rgba(24, 116, 92, .18); }
+    .auth-link::before { content: "?"; width: 18px; height: 18px; display: grid; place-items: center; border-radius: 50%; background: #fff; color: #18745c; font-size: 12px; font-weight: 900; }
+    .auth-link:hover { background: #125f4b; }
+    .risk-link { display: inline-flex; align-items: center; border: 1px solid #c75a53; border-radius: 6px; padding: 7px 10px; color: #96322d; background: #fff4f2; text-decoration: none; font-weight: 800; }
+    .risk-link:hover { background: #fbe5e2; }
+    .risk-modal { position: fixed; inset: 0; z-index: 10000; display: grid; place-items: center; padding: 20px; background: rgba(17, 30, 41, .62); }
+    .risk-modal[hidden] { display: none; }
+    .risk-card { width: min(100%, 620px); max-height: min(760px, calc(100vh - 40px)); overflow: auto; padding: 24px; border: 1px solid #d5dee4; border-radius: 8px; background: #fff; box-shadow: 0 24px 64px rgba(12, 29, 40, .26); }
+    .risk-card-badge { display: inline-block; padding: 4px 7px; border-radius: 4px; color: #9a342f; background: #fcecea; font-size: 12px; font-weight: 800; }
+    .risk-card h2 { margin: 10px 0 8px; font-size: 23px; }
+    .risk-card > p { margin: 0; color: var(--muted); line-height: 1.7; }
+    .risk-points { margin: 16px 0; padding: 13px 15px 13px 34px; background: #f5f7f8; line-height: 1.7; }
+    .risk-points li { margin: 5px 0; }
+    .risk-full-link { color: var(--brand-deep); font-weight: 800; }
+    .risk-check { display: flex; align-items: flex-start; gap: 9px; margin-top: 18px; padding: 12px; border: 1px solid #d7b36f; background: #fff7e7; line-height: 1.6; cursor: pointer; }
+    .risk-check input { width: 18px; height: 18px; min-height: 18px; margin-top: 2px; padding: 0; }
+    .risk-actions { display: grid; grid-template-columns: 1fr 1.4fr; gap: 10px; margin-top: 16px; }
+    .risk-actions button { min-height: 42px; border-radius: 6px; font: inherit; font-weight: 800; cursor: pointer; }
+    .risk-exit { border: 1px solid #c5d1da; color: var(--ink); background: #fff; }
+    .risk-accept { border: 1px solid var(--brand); color: #fff; background: var(--brand); }
+    .risk-accept:disabled { opacity: .45; cursor: not-allowed; }
 
     button, input, textarea { -webkit-tap-highlight-color: transparent; }
     button:focus-visible, input:focus-visible, textarea:focus-visible {
@@ -282,7 +303,26 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 9px 10px;
-      margin-top: 8px;
+    }
+    .filter-groups {
+      display: grid;
+      gap: 12px;
+      margin: 9px 0 12px;
+    }
+    .filter-group {
+      min-width: 0;
+      margin: 0;
+      padding: 0;
+      border: 0;
+    }
+    .filter-group legend {
+      margin-bottom: 5px;
+      padding: 0;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .checks.three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
     }
     .check {
       display: flex;
@@ -747,10 +787,15 @@
 
     .pdf-print-area.pdf-exporting {
       display: block;
-      position: absolute;
-      left: -10000px;
-      top: 0;
+      position: relative;
+      left: auto;
+      top: auto;
+      z-index: auto;
+      margin: 0 auto;
       width: 190mm;
+      min-height: 1px;
+      overflow: visible;
+      pointer-events: none;
       color: #17202a;
       background: #fff;
       font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", sans-serif;
@@ -849,6 +894,23 @@
       <p id="authGateMessage">请稍候...</p>
     </div>
   </div>
+  <div class="risk-modal" id="riskConfirmModal" hidden>
+    <div class="risk-card" role="dialog" aria-modal="true" aria-labelledby="riskConfirmTitle">
+      <span class="risk-card-badge">首次使用必读</span>
+      <h2 id="riskConfirmTitle">志愿填报风险提示</h2>
+      <p>本系统是辅助筛选工具，推荐结果不代表录取承诺。请先了解以下风险：</p>
+      <ol class="risk-points">
+        <li>历史分数、位次和招生计划可能存在延迟、误差或调整。</li>
+        <li>“冲、稳、保”仅表示相对风险区间，不能保证录取。</li>
+        <li>按分数推荐用于模拟；正式填报应优先参考位次。</li>
+        <li>院校专业要求、计划人数和录取规则须以当年官方信息为准。</li>
+        <li>最终填报决定由考生及家长结合官方信息自主作出。</li>
+      </ol>
+      <a class="risk-full-link" href="./risk-notice.html" target="_blank" rel="noopener noreferrer">阅读完整风险提示书</a>
+      <label class="risk-check"><input id="riskAgreeCheckbox" type="checkbox" /> <span>我已阅读完整风险提示，理解系统仅供辅助参考，并知悉志愿填报存在不确定性。</span></label>
+      <div class="risk-actions"><button class="risk-exit" id="riskExitBtn" type="button">退出登录</button><button class="risk-accept" id="riskAcceptBtn" type="button" disabled>我已阅读并知悉风险</button></div>
+    </div>
+  </div>
   <header>
     <div class="topbar">
       <div class="brand">
@@ -856,6 +918,8 @@
         <h1>福建美术与设计类志愿填报助手</h1>
       </div>
       <div class="auth-tools">
+        <a class="auth-button auth-link" href="./help.html">&#20351;&#29992;&#35828;&#26126;</a>
+        <a class="risk-link" href="./risk-notice.html">风险提示</a>
         <span class="auth-user" id="authUserLabel"></span>
         <button class="auth-button" id="signOutBtn" type="button" hidden>退出</button>
       </div>
@@ -928,15 +992,30 @@
 
       <div class="panel">
         <h2>筛选偏好</h2>
-        <div class="checks">
-          <label class="check" hidden aria-hidden="true"><input id="includeUnverified" type="checkbox" checked /> 待补数据</label>
-          <label class="check"><input id="includePrivate" type="checkbox" checked /> 民办/独立</label>
-          <label class="check"><input id="includeCoop" type="checkbox" checked /> 中外合作</label>
-          <label class="check"><input id="preferFujian" type="checkbox" checked /> 优先省内</label>
-          <label class="check"><input id="includePublic" type="checkbox" checked /> 公办</label>
-          <label class="check"><input id="include985" type="checkbox" checked /> 985</label>
-          <label class="check"><input id="include211" type="checkbox" checked /> 211</label>
-          <label class="check"><input id="includeDouble" type="checkbox" checked /> 双一流</label>
+        <label class="check" hidden aria-hidden="true"><input id="includeUnverified" type="checkbox" checked /> &#24453;&#34917;&#25968;&#25454;</label>
+        <div class="filter-groups">
+          <fieldset class="filter-group">
+            <legend>&#21150;&#23398;&#24615;&#36136;</legend>
+            <div class="checks">
+              <label class="check"><input id="includePublic" type="checkbox" checked /> &#20844;&#21150;</label>
+              <label class="check"><input id="includePrivate" type="checkbox" checked /> &#27665;&#21150;/&#29420;&#31435;</label>
+            </div>
+          </fieldset>
+          <fieldset class="filter-group">
+            <legend>&#38498;&#26657;&#23618;&#27425;</legend>
+            <div class="checks three">
+              <label class="check"><input id="include985" type="checkbox" checked /> 985</label>
+              <label class="check"><input id="include211" type="checkbox" checked /> 211</label>
+              <label class="check"><input id="includeDouble" type="checkbox" checked /> &#21452;&#19968;&#27969;</label>
+            </div>
+          </fieldset>
+          <fieldset class="filter-group">
+            <legend>&#20854;&#20182;&#20559;&#22909;</legend>
+            <div class="checks">
+              <label class="check"><input id="includeCoop" type="checkbox" checked /> &#20013;&#22806;&#21512;&#20316;</label>
+              <label class="check"><input id="preferFujian" type="checkbox" checked /> &#20248;&#20808;&#30465;&#20869;</label>
+            </div>
+          </fieldset>
         </div>
         <label for="keywordInput">关键词</label>
         <input id="keywordInput" type="search" placeholder="院校、专业、省份、层级" />
@@ -977,7 +1056,7 @@
 
         <div class="content" id="recommendTab">
           <div class="toolbar">
-            <p>默认按 10 冲、18 稳、12 保生成 40 个志愿。已核数据不足时，会补入待补计划作为观察项。</p>
+            <p>默认目标为 10 冲、18 稳、12 保，最多生成 40 个志愿。某档没有合适院校时留空，不跨档补位。</p>
             <div class="save-tools">
               <span class="save-status" id="savePlanStatus" aria-live="polite"></span>
               <button class="action secondary" id="exportBtn" type="button" hidden>下载 CSV</button>
@@ -1070,6 +1149,7 @@
   <script src="./supabase-config.js"></script>
   <script src="./auth.js"></script>
   <script src="./shared/fujian-art-admission-sites.js"></script>
+  <script src="./shared/fujian-art-school-metadata.js"></script>
   <script src="./shared/fujian-art-rank-2025.js"></script>
   <script>
     (async function initializeAuthorization() {
@@ -1101,6 +1181,23 @@
       document.getElementById("authUserLabel").textContent = label;
       document.getElementById("signOutBtn").hidden = false;
       document.getElementById("signOutBtn").addEventListener("click", FujianArtAuth.signOut);
+      const riskVersion = "2026-06-22-v1";
+      const riskStorageKey = `fujian-art-risk-ack:${riskVersion}:${result.session.user.id}`;
+      let riskAcknowledged = false;
+      try { riskAcknowledged = Boolean(localStorage.getItem(riskStorageKey)); } catch (error) {}
+      if (!riskAcknowledged) {
+        const modal = document.getElementById("riskConfirmModal");
+        const checkbox = document.getElementById("riskAgreeCheckbox");
+        const acceptButton = document.getElementById("riskAcceptBtn");
+        modal.hidden = false;
+        checkbox.addEventListener("change", () => { acceptButton.disabled = !checkbox.checked; });
+        document.getElementById("riskExitBtn").addEventListener("click", FujianArtAuth.signOut);
+        acceptButton.addEventListener("click", () => {
+          if (!checkbox.checked) return;
+          try { localStorage.setItem(riskStorageKey, JSON.stringify({ version: riskVersion, acknowledgedAt: new Date().toISOString() })); } catch (error) {}
+          modal.hidden = true;
+        });
+      }
     })();
   </script>
   <script src="shared/fujian-art-rank-2025.js"></script>
@@ -4546,6 +4643,8 @@
       {school:"南昌职业大学", province:"", level:"官方数据", year:2023, info:"视觉传达设计，录取2，平均480", subject:"physics", min:479.6, max:480.3, avg:480, status:"省教委官方数据（人工已核（用户按原表确认））", source:"福建省教委官方结构化数据（物理组，2023-2025，用户提供）", tags:["official"]}
     ];
 
+    window.FujianArtSchoolMetadata?.enrichAll(colleges);
+
     const schoolLinks = {
       "厦门大学": "https://zs.xmu.edu.cn/info/1051/32812.htm",
       "福州大学": "https://zsks.fzu.edu.cn/info/1068/2346.htm",
@@ -4883,12 +4982,19 @@
       const subjectOk = item.subject === "both" || item.subject === subject;
       if (!subjectOk) return false;
       if (!includeUnverified && item.min == null) return false;
-      if (!includePrivate && item.tags.includes("private")) return false;
+      const ownershipTags = item.tags.filter(tag => tag === "public" || tag === "private");
+      const selectedOwnership = [includePublic && "public", includePrivate && "private"].filter(Boolean);
       if (!includeCoop && (item.tags.includes("coop") || /中外|合作办学/.test(item.info))) return false;
-      if (!includePublic && item.tags.includes("public")) return false;
-      if (!include985 && item.tags.includes("985")) return false;
-      if (!include211 && item.tags.includes("211")) return false;
-      if (!includeDouble && item.tags.includes("double")) return false;
+      const tierTags = item.tags.filter(tag => ["985", "211", "double"].includes(tag));
+      const selectedTiers = [include985 && "985", include211 && "211", includeDouble && "double"].filter(Boolean);
+      const tierFilterActive = selectedTiers.length > 0;
+      const matchesSelectedTier = tierTags.some(tag => selectedTiers.includes(tag));
+      const ownershipOk = !ownershipTags.length || ownershipTags.some(tag => selectedOwnership.includes(tag));
+      if (!ownershipOk && !(tierFilterActive && matchesSelectedTier)) return false;
+      if (selectedTiers.length !== 3) {
+        if (!selectedTiers.length && tierTags.length) return false;
+        if (selectedTiers.length && !tierTags.some(tag => selectedTiers.includes(tag))) return false;
+      }
       if (keyword) {
         const hay = [item.school, item.province, item.level, item.info, item.status].join(" ").toLowerCase();
         if (!hay.includes(keyword)) return false;
@@ -4941,6 +5047,8 @@
       const bits = [];
       if (item.min != null) bits.push(referenceText(item));
       if (recommendMode === "rank" && item.min != null && rankRiskText(item)) bits.push(rankRiskText(item));
+      const previousYears = (item.historyRecords || []).filter(record => record.year !== item.year && record.min != null);
+      if (previousYears.length) bits.push(`\u5F80\u5E74\u53C2\u8003\uFF1A${previousYears.map(record => `${record.year}\u6700\u4F4E${fmt(record.min)}`).join("\uFF0C")}`);
       bits.push(`数据状态：${publicDataStatus(item)}`);
       if (hasAny(item, ["985", "211", "double"])) bits.push("高层级院校，小计划波动需放大安全垫");
       if (item.tags.includes("coop")) bits.push("中外合作需核学费、外语和培养方式");
@@ -4964,6 +5072,60 @@
         rows.sort((a, b) => (b.min || -1) - (a.min || -1));
       }
       return rows;
+    }
+
+    function programName(item) {
+      const info = String(item?.info || "").trim();
+      const match = info.match(/^(.+?)[\uFF0C,]\s*\u5F55\u53D6/);
+      return (match ? match[1] : info || "\u4E13\u4E1A\u5F85\u6838").trim();
+    }
+
+    function recommendationKey(item) {
+      const normalize = value => String(value || "").normalize("NFKC").trim().toLowerCase().replace(/\s+/g, "").replace(/[\u3014\u3010]/g, "(").replace(/[\u3015\u3011]/g, ")");
+      return [normalize(item?.school), normalize(programName(item)), normalize(item?.subject)].join("|");
+    }
+
+    function aggregateRecommendationRows(rows) {
+      const groups = new Map();
+      rows.forEach(item => {
+        const key = recommendationKey(item);
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(item);
+      });
+      return [...groups.entries()].map(([key, records]) => {
+        const sorted = [...records].sort((a, b) =>
+          Number(b.year || 0) - Number(a.year || 0) ||
+          Number((b.tags || []).includes("official")) - Number((a.tags || []).includes("official")) ||
+          Number(b.min || 0) - Number(a.min || 0)
+        );
+        const byYear = new Map();
+        sorted.forEach(record => { if (!byYear.has(record.year)) byYear.set(record.year, record); });
+        const primary = [...byYear.values()][0];
+        return {
+          ...primary,
+          recommendationKey: key,
+          program: programName(primary),
+          historyRecords: [...byYear.values()].map(record => ({
+            year: record.year,
+            min: record.min,
+            max: record.max,
+            avg: record.avg,
+            info: record.info,
+            status: record.status,
+            source: record.source
+          }))
+        };
+      });
+    }
+
+    function dedupePlanRecommendations(rows) {
+      const seen = new Set();
+      return (Array.isArray(rows) ? rows : []).filter(row => {
+        const key = recommendationKey(row.item || {});
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      }).map((row, index) => ({ ...row, index: index + 1 }));
     }
 
     function makeRecommendations() {
@@ -4990,7 +5152,7 @@
         return;
       }
 
-      const rows = allRows.filter(r => r.min != null);
+      const rows = aggregateRecommendationRows(allRows.filter(r => r.min != null));
       const grouped = { rush: [], steady: [], safe: [] };
 
       rows.forEach(item => {
@@ -5013,18 +5175,17 @@
       take("steady", counts.steady);
       take("safe", counts.safe);
 
-      const fallback = rows.filter(item => !picked.some(x => x.item === item));
-      for (const item of fallback) {
-        if (picked.length >= 40) break;
-        const band = useRank ? classifyByRank(item, userRank) : classifyByScore(item, score);
-        picked.push({ item, band: grouped[band] ? band : "safe" });
-      }
-
-      const unknown = recommendMode === "rank" ? [] : allRows.filter(item => item.min == null && !picked.some(x => x.item === item));
-      for (const item of unknown) {
-        if (picked.length >= 40) break;
-        picked.push({ item, band: "info" });
-      }
+      const actualCounts = {
+        rush: picked.filter(x => x.band === "rush").length,
+        steady: picked.filter(x => x.band === "steady").length,
+        safe: picked.filter(x => x.band === "safe").length
+      };
+      const shortages = ["rush", "steady", "safe"]
+        .filter(band => counts[band] > 0 && actualCounts[band] < counts[band])
+        .map(band => `${bandLabel(band)} ${actualCounts[band]}/${counts[band]}`);
+      recommendationNotice = shortages.length
+        ? `\u5f53\u524d\u7b5b\u9009\u4e0b\u90e8\u5206\u6863\u4f4d\u9662\u6821\u4e0d\u8db3\uff0c\u5df2\u7559\u7a7a\u4e14\u672a\u8de8\u6863\u8865\u4f4d\uff1a${shortages.join("\uff0c")}\u3002`
+        : "";
 
       latestRecommendations = picked.slice(0, 40).map((x, i) => ({ index: i + 1, ...x }));
       render(score, userRank, useRank);
@@ -5062,7 +5223,7 @@
         </tr>
       `).join("");
 
-      $("recommendList").innerHTML = latestRecommendations.length ? latestRecommendations.map(({ index, item, band }) => `
+      const recommendationCards = latestRecommendations.map(({ index, item, band }) => `
         <article class="volunteer">
           <div class="volunteer-head">
             <h3>${schoolLink(item, `${index}. `)}</h3>
@@ -5071,7 +5232,10 @@
           <div class="meta">${item.province} · ${item.level} · ${item.year} · ${item.info}</div>
           <div class="risk">${riskText(item, band, score, userRank)}</div>
         </article>
-      `).join("") : `<div class="notice">${recommendationNotice || "当前筛选下没有足够数据，请放宽筛选条件。"}</div>`;
+      `).join("");
+      $("recommendList").innerHTML = latestRecommendations.length
+        ? `${recommendationNotice ? `<div class="notice">${recommendationNotice}</div>` : ""}${recommendationCards}`
+        : `<div class="notice">${recommendationNotice || "\u5f53\u524d\u7b5b\u9009\u4e0b\u6ca1\u6709\u5408\u9002\u9662\u6821\uff0c\u5df2\u7559\u7a7a\uff1b\u53ef\u8c03\u6574\u7b5b\u9009\u6761\u4ef6\u540e\u91cd\u65b0\u751f\u6210\u3002"}</div>`;
     }
 
     function renderRanks() {
@@ -5123,7 +5287,7 @@
     }
 
     function planRecommendations() {
-      return latestRecommendations.map(({ index, band, item }) => ({ index, band, item: { ...item, tags: [...(item.tags || [])] } }));
+      return latestRecommendations.map(({ index, band, item }) => ({ index, band, item: { ...item, tags: [...(item.tags || [])], historyRecords: (item.historyRecords || []).map(record => ({ ...record })) } }));
     }
 
     function renderSavedPlans() {
@@ -5135,7 +5299,7 @@
       container.innerHTML = savedPlans.map(plan => {
         const date = new Date(plan.created_at);
         const dateText = Number.isNaN(date.getTime()) ? "" : date.toLocaleString("zh-CN", { hour12: false });
-        const count = Array.isArray(plan.recommendations) ? plan.recommendations.length : 0;
+        const count = dedupePlanRecommendations(plan.recommendations).length;
         const basis = plan.recommend_mode === "rank" ? "位次 " + (plan.candidate_rank || "-") : "综合分 " + fmt(plan.composite_score);
         return '<article class="saved-plan">' +
           '<div class="saved-plan-head"><h3>' + escapeHtml(plan.name) + '</h3><span class="pill info">' + count + ' 个志愿</span></div>' +
@@ -5185,7 +5349,7 @@
     }
 
     async function exportSavedPlanPdf(plan, button) {
-      const recommendations = Array.isArray(plan.recommendations) ? plan.recommendations : [];
+      const recommendations = dedupePlanRecommendations(plan.recommendations);
       if (!recommendations.length) {
         $("savedExportStatus").textContent = "该方案没有可导出的志愿数据。";
         return;
@@ -5247,7 +5411,11 @@
         const html2pdf = await loadHtml2Pdf();
         if (document.fonts?.ready) await document.fonts.ready;
         await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-        await html2pdf().set({
+        const bounds = area.getBoundingClientRect();
+        if (!area.textContent.trim() || bounds.width < 100 || bounds.height < 100) {
+          throw new Error("??????????");
+        }
+        const worker = html2pdf().set({
           margin: [9, 8, 11, 8],
           filename,
           image: { type: "jpeg", quality: 0.98 },
@@ -5255,7 +5423,13 @@
           jsPDF: { unit: "mm", format: "a4", orientation: "portrait", compress: true },
           pagebreak: { mode: ["css", "legacy"], avoid: ["tr"] },
           enableLinks: true
-        }).from(area).save();
+        }).from(area).toCanvas();
+        let canvas = null;
+        await worker.get("canvas", value => { canvas = value; });
+        if (!canvas || canvas.width < 100 || canvas.height < 100) {
+          throw new Error("PDF??????");
+        }
+        await worker.toPdf().save();
         $("savedExportStatus").textContent = "PDF 已保存，仍停留在当前页面。";
       } catch (error) {
         $("savedExportStatus").textContent = "PDF 保存失败：" + (error?.message || "未知错误");
@@ -5357,7 +5531,7 @@
       document.querySelectorAll("#methodSeg button").forEach(button => button.classList.toggle("active", button.dataset.value === recommendMode));
       $("scoreInput").value = plan.composite_score == null ? "" : plan.composite_score;
       $("rankInput").value = plan.candidate_rank || "";
-      latestRecommendations = Array.isArray(plan.recommendations) ? plan.recommendations : [];
+      latestRecommendations = dedupePlanRecommendations(plan.recommendations);
       recommendationsGenerated = true;
       setRankData2025ForSubject();
       loadManagedRankData2026();

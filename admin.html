@@ -608,6 +608,7 @@
       }
     })();
   </script>
+  <script src="./shared/fujian-art-school-metadata.js"></script>
   <script src="./shared/fujian-art-data.js"></script>
   <script>
     const STORAGE_KEY = "fujian_art_web_admin_colleges";
@@ -615,7 +616,7 @@
     const RANK_2026_STORAGE_PREFIX = "fujian_art_rank_2026_";
     const $ = id => document.getElementById(id);
 
-    let baseColleges = window.FujianArtData.colleges.map((item, index) => withId(item, index));
+    let baseColleges = window.FujianArtData.colleges.map((item, index) => withId(window.FujianArtSchoolMetadata.enrich(item), index));
     let colleges = loadColleges();
     let selectedId = "";
 
