@@ -401,7 +401,7 @@
 
     .tabs {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(4, 1fr);
       gap: 6px;
       padding: 10px;
       border-bottom: 1px solid var(--line);
@@ -502,6 +502,77 @@
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
+    }
+    #manualTab {
+      padding-top: 0;
+    }
+    .manual-sticky {
+      position: sticky;
+      top: 0;
+      z-index: 120;
+      margin: 0 -16px 20px;
+      padding: 12px 16px 16px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+      box-shadow: 0 16px 22px rgba(23, 32, 38, 0.12);
+      isolation: isolate;
+    }
+    .manual-sticky::before,
+    .manual-sticky::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      background: #fff;
+      pointer-events: none;
+    }
+    .manual-sticky::before {
+      top: 0;
+      bottom: 0;
+      z-index: -1;
+    }
+    .manual-sticky::after {
+      bottom: -40px;
+      height: 40px;
+      z-index: -1;
+    }
+    #manualList {
+      position: relative;
+      z-index: 1;
+      padding-top: 20px;
+    }
+    .manual-toolbar {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .manual-toolbar p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
+    .manual-sticky .notice { margin-bottom: 0; }
+    .manual-status-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 34px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      background: #fff3dd;
+      color: var(--amber);
+      font-weight: 800;
+      white-space: nowrap;
+    }
+    .manual-actions-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .manual-actions-row .action { min-height: 34px; padding: 6px 10px; font-size: 12px; }
+    .manual-add.added { border-color: #d7b36f !important; color: var(--amber); background: #fff8e9; }
+    .manual-load-more {
+      grid-column: 1 / -1;
+      margin-top: 2px;
     }
     .save-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
     .save-status { color: var(--muted); font-size: 12px; }
@@ -703,6 +774,11 @@
       .panel, .content { padding: 14px; }
       .toolbar { align-items: stretch; flex-direction: column; }
       .toolbar .action { width: 100%; }
+      #manualTab { padding-top: 0; }
+      .manual-sticky { margin: 0 -14px 20px; padding: 12px 14px 16px; }
+      .manual-toolbar { grid-template-columns: 1fr; }
+      .manual-status-pill { justify-self: start; }
+      .manual-toolbar .action { width: 100%; }
       .export-actions { display: grid; grid-template-columns: 1fr; }
       .download-link { width: 100%; }
       .table-wrap {
@@ -979,15 +1055,15 @@
         <div class="grid-2">
           <div>
             <label for="rushCount">冲</label>
-            <input id="rushCount" type="number" min="0" max="40" step="1" value="10" />
+            <input id="rushCount" type="number" min="0" max="50" step="1" value="12" />
           </div>
           <div>
             <label for="steadyCount">稳</label>
-            <input id="steadyCount" type="number" min="0" max="40" step="1" value="18" />
+            <input id="steadyCount" type="number" min="0" max="50" step="1" value="23" />
           </div>
         </div>
         <label for="safeCount">保</label>
-        <input id="safeCount" type="number" min="0" max="40" step="1" value="12" />
+        <input id="safeCount" type="number" min="0" max="50" step="1" value="15" />
       </div>
 
       <div class="panel">
@@ -1028,7 +1104,7 @@
 
       <div class="panel hidden" hidden aria-hidden="true">
         <h2>一分一段表</h2>
-        <div class="notice" id="rank2025Status">已内置 2025 福建美术与设计类综合分一分一段表，会按历史/物理自动切换。按位次生成还需要导入 2026 表。</div>
+        <div class="notice" id="rank2025Status">已内置官方 2023-2025 福建美术与设计类综合分一分一段表，会按年份和历史/物理自动匹配。按位次生成还需要导入 2026 表。</div>
         <label for="rankText2026">2026一分一段表</label>
         <textarea id="rankText2026" placeholder="score,rank,count&#10;550,1180,42&#10;549.75,1221,37"></textarea>
         <div class="btnrow">
@@ -1042,7 +1118,7 @@
       <div class="summary">
         <div class="metric"><span>估算位次</span><strong id="rankMetric">暂无</strong><em id="rankHint">未导入一分一段表</em></div>
         <div class="metric"><span>匹配项目</span><strong id="poolMetric">0</strong><em>按当前条件</em></div>
-        <div class="metric"><span>志愿数量</span><strong id="countMetric">40</strong><em>冲稳保合计</em></div>
+        <div class="metric"><span>志愿数量</span><strong id="countMetric">50</strong><em>冲稳保合计</em></div>
         <div class="metric"><span>推荐口径</span><strong id="modeMetric">分数</strong><em id="modeHint">当前按综合分差值</em></div>
       </div>
 
@@ -1050,13 +1126,14 @@
         <div class="tabs">
           <button type="button" class="active" data-tab="recommend">志愿建议</button>
           <button type="button" data-tab="college" hidden>院校池</button>
+          <button type="button" data-tab="manual">手动选志愿</button>
           <button type="button" data-tab="rank">位次说明</button>
           <button type="button" data-tab="saved">我的志愿</button>
         </div>
 
         <div class="content" id="recommendTab">
           <div class="toolbar">
-            <p>默认目标为 10 冲、18 稳、12 保，最多生成 40 个志愿。某档没有合适院校时留空，不跨档补位。</p>
+            <p>默认目标为 12 冲、23 稳、15 保，最多生成 50 个志愿。某档没有合适院校时留空，不跨档补位。</p>
             <div class="save-tools">
               <span class="save-status" id="savePlanStatus" aria-live="polite"></span>
               <button class="action secondary" id="exportBtn" type="button" hidden>下载 CSV</button>
@@ -1071,6 +1148,18 @@
             <textarea id="csvOutput" readonly></textarea>
           </div>
           <div class="recommend-list" id="recommendList"></div>
+        </div>
+
+        <div class="content hidden" id="manualTab">
+          <div class="manual-sticky">
+            <div class="manual-toolbar">
+              <p>按当前分数、位次和筛选偏好列出可选院校专业。点击“加入志愿表”后，可保存为一份手动志愿方案。</p>
+              <span class="manual-status-pill" id="manualCount">0 / 50</span>
+              <button class="action primary" id="saveManualBtn" type="button">保存到我的志愿</button>
+            </div>
+            <div class="notice" id="manualStatus">请选择喜欢的院校专业，最多 50 个。</div>
+          </div>
+          <div class="recommend-list" id="manualList"></div>
         </div>
 
         <div class="content hidden" id="collegeTab" hidden aria-hidden="true">
@@ -1096,7 +1185,7 @@
         </div>
 
         <div class="content hidden" id="rankTab">
-          <div class="notice">按位次生成逻辑：用院校 2025 录取分查 2025 位次，再用该位次映射到 2026 一分一段表得到等位分。下表同时展示内置的 2025 历史组和物理组数据，2026 表按当前科类展示。</div>
+          <div class="notice">按位次生成逻辑：用院校对应年份录取分查询同年份官方位次，再用该位次映射到 2026 一分一段表得到等位分。下表展示已内置官方年份表，2026 表按当前科类展示。</div>
           <div class="table-wrap">
             <table>
               <thead><tr><th>综合分</th><th>累计位次</th><th>本分人数</th></tr></thead>
@@ -4695,9 +4784,17 @@
     let subject = "history";
     let recommendMode = "score";
     const embeddedRankData2025BySubject = (window.FujianArtRank2025 && window.FujianArtRank2025.rankData2025BySubject) || { history: [], physics: [] };
-    let rankData2025 = embeddedRankData2025BySubject[subject] || [];
+    const embeddedRankDataByYearSubject = (window.FujianArtRank2025 && window.FujianArtRank2025.rankDataByYearSubject) || { 2025: embeddedRankData2025BySubject };
+    let rankData2025 = [];
     let rankData2026 = [];
+    const VOLUNTEER_LIMIT = 50;
+    const DEFAULT_COUNTS = { rush: 12, steady: 23, safe: 15 };
+    const MANUAL_INITIAL_VISIBLE = 160;
+    const MANUAL_LOAD_STEP = 100;
     let latestRecommendations = [];
+    let manualSelections = [];
+    let manualCandidateCache = [];
+    let manualVisibleCount = MANUAL_INITIAL_VISIBLE;
     let recommendationsGenerated = false;
     let recommendationNotice = "";
     let exportObjectUrl = "";
@@ -4715,14 +4812,44 @@
     const fmt = n => n == null ? "待补" : Number(n).toFixed(2).replace(/\\.00$/, "");
     const hasAny = (item, tags) => tags.some(t => item.tags.includes(t));
 
+    function rankSubjectForItem(item) {
+      return item?.subject === "physics" || item?.subject === "history" ? item.subject : subject;
+    }
+
+    function rankYearForItem(item) {
+      const year = Number(item?.year);
+      return Number.isFinite(year) ? year : 2025;
+    }
+
+    function rankDataForYearSubject(year, rankSubject = subject) {
+      const data = embeddedRankDataByYearSubject[String(year)] || embeddedRankDataByYearSubject[Number(year)];
+      return data?.[rankSubject] || [];
+    }
+
+    function rankDataForItem(item) {
+      return rankDataForYearSubject(rankYearForItem(item), rankSubjectForItem(item));
+    }
+
+    function availableOfficialRankYears(rankSubject = subject) {
+      return Object.keys(embeddedRankDataByYearSubject)
+        .filter(year => (embeddedRankDataByYearSubject[year]?.[rankSubject] || []).length)
+        .map(Number)
+        .sort((a, b) => a - b);
+    }
+
+    function hasOfficialRankDataForSubject(rankSubject = subject) {
+      return availableOfficialRankYears(rankSubject).length > 0;
+    }
+
     function setRankData2025ForSubject() {
-      rankData2025 = embeddedRankData2025BySubject[subject] || [];
+      rankData2025 = rankDataForYearSubject(2025, subject);
       const status = $("rank2025Status");
       if (!status) return;
       const subjectText = subject === "history" ? "历史组" : "物理组";
-      status.textContent = rankData2025.length
-        ? `已内置 2025 福建美术与设计类${subjectText}综合分一分一段表（${rankData2025.length} 行）。按位次生成还需要导入 2026 表。`
-        : `未加载到 2025 ${subjectText}一分一段表，请检查 shared/fujian-art-rank-2025.js。`;
+      const years = availableOfficialRankYears(subject);
+      status.textContent = years.length
+        ? `已内置 ${years.join("、")} 福建美术与设计类${subjectText}官方综合分一分一段表。按位次生成还需要导入 2026 表。`
+        : `未加载到${subjectText}官方一分一段表，请检查 shared/fujian-art-rank-2025.js。`;
     }
 
     function rankForScore(score, data) {
@@ -4829,8 +4956,8 @@
         return null;
       }
       const userRank = Number($("rankInput").value) || estimatedRank(score);
-      if (recommendMode === "rank" && !rankData2025.length) {
-        updateQuotaStatus("未加载到2025一分一段表，暂时不能按位次生成。", true);
+      if (recommendMode === "rank" && !hasOfficialRankDataForSubject()) {
+        updateQuotaStatus("未加载到当前科类官方一分一段表，暂时不能按位次生成。", true);
         return null;
       }
       if (recommendMode === "rank" && !rankData2026.length) {
@@ -4924,22 +5051,27 @@
       recommendationsGenerated = false;
       latestRecommendations = [];
       recommendationNotice = "请填写分数并点击“生成志愿”。";
+      resetManualVisibleCount();
       const score = Number($("scoreInput").value) || 0;
       const userRank = Number($("rankInput").value) || estimatedRank(score);
       render(score, userRank, false);
+      renderManualSelection();
     }
 
     function refreshRecommendationsIfGenerated() {
+      resetManualVisibleCount();
       if (recommendationsGenerated) {
         makeRecommendations();
         scheduleCurrentPlanUpdate();
       } else {
         resetRecommendations();
       }
+      renderManualSelection();
     }
 
     function collegeRank(item) {
-      return item.min == null ? null : rankForScore(item.min, rankData2025);
+      const table = rankDataForItem(item);
+      return item.min == null ? null : rankForScore(item.min, table);
     }
 
     function equivalentScore2026(item) {
@@ -4952,9 +5084,10 @@
       const scoreText = `${item.year}参考最低分 ${fmt(item.min)}${item.max ? `-${fmt(item.max)}` : ""}`;
       const rank = collegeRank(item);
       const equivalent = equivalentScore2026(item);
-      if (rank && equivalent != null) return `${scoreText}，2025位次约 ${rank}，2026等位分约 ${fmt(equivalent)}`;
-      if (rank) return `${scoreText}，2025位次约 ${rank}，2026等位分待导入2026表`;
-      return `${scoreText}，2025位次待导入2025表`;
+      const rankYear = rankYearForItem(item);
+      if (rank && equivalent != null) return `${scoreText}，${rankYear}位次约 ${rank}，2026等位分约 ${fmt(equivalent)}`;
+      if (rank) return `${scoreText}，${rankYear}位次约 ${rank}，2026等位分待导入2026表`;
+      return `${scoreText}，${rankYear}位次表待导入`;
     }
 
     function selectedCounts() {
@@ -4962,12 +5095,12 @@
       const steady = Math.max(0, Number($("steadyCount").value || 0));
       const safe = Math.max(0, Number($("safeCount").value || 0));
       const total = rush + steady + safe;
-      if (total === 40) return { rush, steady, safe };
-      if (total === 0) return { rush: 10, steady: 18, safe: 12 };
-      const scale = 40 / total;
+      if (total === VOLUNTEER_LIMIT) return { rush, steady, safe };
+      if (total === 0) return { ...DEFAULT_COUNTS };
+      const scale = VOLUNTEER_LIMIT / total;
       const r = Math.round(rush * scale);
       const s = Math.round(steady * scale);
-      return { rush: r, steady: s, safe: 40 - r - s };
+      return { rush: r, steady: s, safe: VOLUNTEER_LIMIT - r - s };
     }
 
     function itemMatches(item) {
@@ -5027,7 +5160,8 @@
     function rankRiskText(item) {
       const rank = collegeRank(item);
       const equivalent = equivalentScore2026(item);
-      if (rank && equivalent != null) return `按位次换算：2025录取位次约 ${rank}，2026等位分约 ${fmt(equivalent)}`;
+      const rankYear = rankYearForItem(item);
+      if (rank && equivalent != null) return `按位次换算：${rankYear}录取位次约 ${rank}，2026等位分约 ${fmt(equivalent)}`;
       return "";
     }
 
@@ -5128,20 +5262,39 @@
       }).map((row, index) => ({ ...row, index: index + 1 }));
     }
 
+    function sortVolunteerRowsByBandAndRank(rows) {
+      const bandOrder = { rush: 0, steady: 1, safe: 2, info: 3 };
+      return [...(Array.isArray(rows) ? rows : [])]
+        .sort((a, b) => {
+          const bandDiff = (bandOrder[a.band] ?? 9) - (bandOrder[b.band] ?? 9);
+          if (bandDiff) return bandDiff;
+          const rankA = collegeRank(a.item || {}) ?? Number.POSITIVE_INFINITY;
+          const rankB = collegeRank(b.item || {}) ?? Number.POSITIVE_INFINITY;
+          if (rankA !== rankB) return rankA - rankB;
+          return Number(b.item?.min || 0) - Number(a.item?.min || 0);
+        })
+        .map((row, index) => ({ ...row, index: index + 1 }));
+    }
+
+    function normalizeSavedRecommendations(plan) {
+      const rows = dedupePlanRecommendations(plan?.recommendations || []);
+      return plan?.filters?.manual ? sortVolunteerRowsByBandAndRank(rows) : rows;
+    }
+
     function makeRecommendations() {
       const score = Number($("scoreInput").value);
       const inputRank = Number($("rankInput").value);
       const userRank = inputRank || estimatedRank(score);
-      const useRank = recommendMode === "rank" && !!userRank && rankData2025.length > 0 && rankData2026.length > 0;
+      const useRank = recommendMode === "rank" && !!userRank && hasOfficialRankDataForSubject() && rankData2026.length > 0;
       const counts = selectedCounts();
       const allRows = pool().filter(r => !r.tags.includes("special"));
       recommendationNotice = "";
 
-      if (recommendMode === "rank" && (!rankData2025.length || !rankData2026.length)) {
+      if (recommendMode === "rank" && (!hasOfficialRankDataForSubject() || !rankData2026.length)) {
         latestRecommendations = [];
-        recommendationNotice = !rankData2025.length
-          ? "未加载到内置 2025 一分一段表，请检查 shared/fujian-art-rank-2025.js。"
-          : "按位次生成需要导入 2026 一分一段表。2025表已内置，用于查往年录取位次；2026表用于换算今年等位分。";
+        recommendationNotice = !hasOfficialRankDataForSubject()
+          ? "未加载到当前科类官方一分一段表，请检查 shared/fujian-art-rank-2025.js。"
+          : "按位次生成需要导入 2026 一分一段表。往年官方表已内置，用于查录取位次；2026表用于换算今年等位分。";
         render(score, userRank, false);
         return;
       }
@@ -5167,7 +5320,7 @@
       const picked = [];
       const take = (band, count) => {
         for (const item of grouped[band]) {
-          if (picked.length >= 40 || picked.filter(x => x.band === band).length >= count) break;
+          if (picked.length >= VOLUNTEER_LIMIT || picked.filter(x => x.band === band).length >= count) break;
           if (!picked.some(x => x.item === item)) picked.push({ item, band });
         }
       };
@@ -5187,7 +5340,7 @@
         ? `\u5f53\u524d\u7b5b\u9009\u4e0b\u90e8\u5206\u6863\u4f4d\u9662\u6821\u4e0d\u8db3\uff0c\u5df2\u7559\u7a7a\u4e14\u672a\u8de8\u6863\u8865\u4f4d\uff1a${shortages.join("\uff0c")}\u3002`
         : "";
 
-      latestRecommendations = picked.slice(0, 40).map((x, i) => ({ index: i + 1, ...x }));
+      latestRecommendations = picked.slice(0, VOLUNTEER_LIMIT).map((x, i) => ({ index: i + 1, ...x }));
       render(score, userRank, useRank);
     }
 
@@ -5208,7 +5361,7 @@
       $("poolMetric").textContent = rows.length;
       $("countMetric").textContent = latestRecommendations.length || "0";
       $("modeMetric").textContent = recommendMode === "rank" ? "位次" : "分数";
-      $("modeHint").textContent = recommendMode === "rank" ? "2025位次映射2026等位分" : "当前按综合分差值";
+      $("modeHint").textContent = recommendMode === "rank" ? "往年位次映射2026等位分" : "当前按综合分差值";
       $("rankMetric").textContent = userRank || "暂无";
       $("rankHint").textContent = userRank ? ($("rankInput").value ? "手动输入" : "来自2026一分一段表") : "未导入2026表";
       $("collegeRows").innerHTML = rows.map(item => `
@@ -5238,11 +5391,158 @@
         : `<div class="notice">${recommendationNotice || "\u5f53\u524d\u7b5b\u9009\u4e0b\u6ca1\u6709\u5408\u9002\u9662\u6821\uff0c\u5df2\u7559\u7a7a\uff1b\u53ef\u8c03\u6574\u7b5b\u9009\u6761\u4ef6\u540e\u91cd\u65b0\u751f\u6210\u3002"}</div>`;
     }
 
+    function manualSelectionKey(row) {
+      return recommendationKey(row.item || row || {});
+    }
+
+    function manualSelectedKeySet() {
+      return new Set(manualSelections.map(manualSelectionKey));
+    }
+
+    function buildManualCandidates() {
+      const score = Number($("scoreInput").value);
+      const inputRank = Number($("rankInput").value);
+      const userRank = inputRank || estimatedRank(score);
+      const useRank = recommendMode === "rank" && !!userRank && hasOfficialRankDataForSubject() && rankData2026.length > 0;
+      if (recommendMode === "rank" && (!userRank || !hasOfficialRankDataForSubject() || !rankData2026.length)) {
+        return { candidates: [], score, userRank, useRank: false };
+      }
+      if (!Number.isFinite(score) || score <= 0) {
+        return { candidates: [], score, userRank, useRank: false };
+      }
+      const rows = aggregateRecommendationRows(pool().filter(r => !r.tags.includes("special") && r.min != null));
+      const candidates = [];
+      rows.forEach(item => {
+        const band = useRank ? classifyByRank(item, userRank) : classifyByScore(item, score);
+        if (["rush", "steady", "safe"].includes(band)) candidates.push({ item, band });
+      });
+      candidates.sort((a, b) => {
+        const order = { rush: 0, steady: 1, safe: 2 };
+        if (order[a.band] !== order[b.band]) return order[a.band] - order[b.band];
+        if (useRank) return Math.abs(rankEquivalentDiff(a.item, score)) - Math.abs(rankEquivalentDiff(b.item, score));
+        return Math.abs((a.item.min || 0) - score) - Math.abs((b.item.min || 0) - score);
+      });
+      return { candidates, score, userRank, useRank };
+    }
+
+    function renumberManualSelections() {
+      manualSelections = manualSelections.slice(0, VOLUNTEER_LIMIT).map((row, index) => ({ ...row, index: index + 1 }));
+    }
+
+    function renderManualSelection() {
+      const { candidates, score, userRank } = buildManualCandidates();
+      manualCandidateCache = candidates;
+      renumberManualSelections();
+      const selected = manualSelectedKeySet();
+      const counts = candidates.reduce((result, row) => {
+        result[row.band] = (result[row.band] || 0) + 1;
+        return result;
+      }, { rush: 0, steady: 0, safe: 0 });
+      $("manualCount").textContent = `${manualSelections.length} / ${VOLUNTEER_LIMIT}`;
+      const visibleCount = Math.min(manualVisibleCount, candidates.length);
+      const statusBits = [`可选：冲 ${counts.rush || 0}、稳 ${counts.steady || 0}、保 ${counts.safe || 0}`];
+      if (candidates.length) statusBits.push(`当前显示 ${visibleCount}/${candidates.length} 条`);
+      if (recommendMode === "rank" && !rankData2026.length) statusBits.push("按位次手动选择需要先导入 2026 一分一段表；当前未生成候选。 ");
+      if (!candidates.length) statusBits.push("当前条件下暂无可选院校，可调整筛选或分数。 ");
+      $("manualStatus").textContent = statusBits.join("；");
+      const cards = candidates.slice(0, visibleCount).map((row, offset) => {
+        const key = recommendationKey(row.item);
+        const isAdded = selected.has(key);
+        return `
+          <article class="volunteer">
+            <div class="volunteer-head">
+              <h3>${schoolLink(row.item, `${offset + 1}. `)}</h3>
+              <span class="pill ${row.band}">${bandLabel(row.band)}</span>
+            </div>
+            <div class="meta">${row.item.province} · ${row.item.level} · ${row.item.year} · ${row.item.info}</div>
+            <div class="risk">${riskText(row.item, row.band, score, userRank)}</div>
+            <div class="manual-actions-row">
+              <button class="action ${isAdded ? "secondary manual-add added" : "primary manual-add"}" data-manual-action="${isAdded ? "remove" : "add"}" data-key="${escapeHtml(key)}" type="button">${isAdded ? "已加入，移出" : "+ 加入志愿表"}</button>
+            </div>
+          </article>
+        `;
+      }).join("");
+      const loadMore = candidates.length > visibleCount
+        ? `<button class="action secondary manual-load-more" id="manualLoadMoreBtn" type="button">加载更多（剩余 ${candidates.length - visibleCount} 条）</button>`
+        : "";
+      $("manualList").innerHTML = cards ? `${cards}${loadMore}` : '<div class="notice">暂无可选院校专业。</div>';
+    }
+
+    function resetManualVisibleCount() {
+      manualVisibleCount = MANUAL_INITIAL_VISIBLE;
+    }
+
+    function loadMoreManualCandidates() {
+      manualVisibleCount += MANUAL_LOAD_STEP;
+      renderManualSelection();
+    }
+
+    function addManualSelection(key) {
+      if (manualSelections.length >= VOLUNTEER_LIMIT) {
+        $("manualStatus").textContent = `手动志愿最多 ${VOLUNTEER_LIMIT} 个，请先移出部分志愿。`;
+        return;
+      }
+      if (manualSelectedKeySet().has(key)) return;
+      const row = manualCandidateCache.find(candidate => recommendationKey(candidate.item) === key);
+      if (!row) return;
+      manualSelections.push({ index: manualSelections.length + 1, band: row.band, item: row.item });
+      renderManualSelection();
+    }
+
+    function removeManualSelection(key) {
+      manualSelections = manualSelections.filter(row => manualSelectionKey(row) !== key);
+      renumberManualSelections();
+      renderManualSelection();
+    }
+
+    async function saveManualPlan() {
+      if (!manualSelections.length) {
+        $("manualStatus").textContent = "请先加入至少一个志愿。";
+        return false;
+      }
+      manualSelections = sortVolunteerRowsByBandAndRank(manualSelections);
+      const score = Number($("scoreInput").value);
+      const rank = Number($("rankInput").value) || estimatedRank(score);
+      const subjectText = subject === "history" ? "历史组" : "物理组";
+      const basisText = Number.isFinite(rank) && rank > 0 ? `位次${Math.round(rank)}` : `综合分${fmt(score)}`;
+      $("manualStatus").textContent = "正在保存手动志愿...";
+      try {
+        const session = await FujianArtAuth.getSession();
+        if (!session) throw new Error("登录状态已失效");
+        const payload = {
+          user_id: session.user.id,
+          name: `${subjectText} · 手动志愿 · ${basisText}`,
+          subject,
+          recommend_mode: "score",
+          composite_score: Number.isFinite(score) ? score : null,
+          candidate_rank: Number.isFinite(rank) && rank > 0 ? Math.round(rank) : null,
+          filters: { ...planFilters(), manual: true },
+          recommendations: sortVolunteerRowsByBandAndRank(manualSelections).map(({ index, band, item }) => ({ index, band, item: { ...item, tags: [...(item.tags || [])], historyRecords: (item.historyRecords || []).map(record => ({ ...record })) } })),
+          updated_at: new Date().toISOString()
+        };
+        const client = FujianArtAuth.getClient();
+        const { data, error } = await client.from("saved_volunteer_plans").insert(payload).select("*").single();
+        if (error) throw error;
+        savedPlans.unshift(data);
+        savedPlans = savedPlans.slice(0, 50);
+        renderSavedPlans();
+        $("manualStatus").textContent = "已保存到我的志愿。";
+        document.querySelector('[data-tab="saved"]').click();
+        return true;
+      } catch (error) {
+        $("manualStatus").textContent = "保存失败：" + (error?.message || "未知错误");
+        return false;
+      }
+    }
+
     function renderRanks() {
-      const builtInTables = [
-        { label: "历史组", rows: embeddedRankData2025BySubject.history || [] },
-        { label: "物理组", rows: embeddedRankData2025BySubject.physics || [] },
-      ];
+      const builtInTables = Object.keys(embeddedRankDataByYearSubject)
+        .map(Number)
+        .sort((a, b) => a - b)
+        .flatMap(year => [
+          { year, label: "历史组", rows: rankDataForYearSubject(year, "history") },
+          { year, label: "物理组", rows: rankDataForYearSubject(year, "physics") },
+        ]);
       if (!builtInTables.some((table) => table.rows.length) && !rankData2026.length) {
         $("rankRows").innerHTML = `<tr><td colspan="3">暂无一分一段数据</td></tr>`;
         return;
@@ -5250,7 +5550,7 @@
       const rows = [];
       builtInTables.forEach((table) => {
         if (!table.rows.length) return;
-        rows.push(`<tr><td colspan="3"><strong>2025 ${table.label}内置表（${table.rows.length} 行）</strong></td></tr>`);
+        rows.push(`<tr><td colspan="3"><strong>${table.year} ${table.label}官方表（${table.rows.length} 行）</strong></td></tr>`);
         rows.push(...[...table.rows].sort((a, b) => b.score - a.score).slice(0, 120).map(r => `<tr><td>${fmt(r.score)}</td><td>${r.rank}</td><td>${r.count || ""}</td></tr>`));
       });
       if (rankData2026.length) {
@@ -5299,8 +5599,8 @@
       container.innerHTML = savedPlans.map(plan => {
         const date = new Date(plan.created_at);
         const dateText = Number.isNaN(date.getTime()) ? "" : date.toLocaleString("zh-CN", { hour12: false });
-        const count = dedupePlanRecommendations(plan.recommendations).length;
-        const basis = plan.recommend_mode === "rank" ? "位次 " + (plan.candidate_rank || "-") : "综合分 " + fmt(plan.composite_score);
+        const count = normalizeSavedRecommendations(plan).length;
+        const basis = plan.filters?.manual ? "手动选择" : (plan.recommend_mode === "rank" ? "位次 " + (plan.candidate_rank || "-") : "综合分 " + fmt(plan.composite_score));
         return '<article class="saved-plan">' +
           '<div class="saved-plan-head"><h3>' + escapeHtml(plan.name) + '</h3><span class="pill info">' + count + ' 个志愿</span></div>' +
           '<div class="saved-plan-meta">' + (plan.subject === "history" ? "历史组" : "物理组") + ' · ' + basis + ' · ' + escapeHtml(dateText) + '</div>' +
@@ -5349,7 +5649,7 @@
     }
 
     async function exportSavedPlanPdf(plan, button) {
-      const recommendations = dedupePlanRecommendations(plan.recommendations);
+      const recommendations = normalizeSavedRecommendations(plan);
       if (!recommendations.length) {
         $("savedExportStatus").textContent = "该方案没有可导出的志愿数据。";
         return;
@@ -5359,15 +5659,16 @@
         return result;
       }, { rush: 0, steady: 0, safe: 0 });
       const subjectText = plan.subject === "physics" ? "物理组" : "历史组";
-      const basisText = plan.recommend_mode === "rank"
-        ? "位次 " + (plan.candidate_rank || "-")
-        : "综合分 " + fmt(plan.composite_score);
+      const basisText = plan.filters?.manual
+        ? "手动选择"
+        : (plan.recommend_mode === "rank"
+          ? "位次 " + (plan.candidate_rank || "-")
+          : "综合分 " + fmt(plan.composite_score));
       const savedDate = new Date(plan.created_at);
       const savedText = Number.isNaN(savedDate.getTime()) ? "-" : savedDate.toLocaleString("zh-CN", { hour12: false });
-      const rankTable = embeddedRankData2025BySubject[plan.subject] || [];
       const rows = recommendations.map((row, position) => {
         const item = row.item || {};
-        const rank = item.min == null ? null : rankForScore(item.min, rankTable);
+        const rank = item.min == null ? null : rankForScore(item.min, rankDataForItem(item));
         const range = item.min == null ? "待补" : fmt(item.min) + (item.max != null ? "-" + fmt(item.max) : "");
         const site = window.FujianArtAdmissionSites?.getSite(item.school || "");
         const school = site
@@ -5397,7 +5698,7 @@
         '<table class="pdf-print-table"><colgroup>' +
           '<col style="width:5%"><col style="width:6%"><col style="width:17%"><col style="width:25%">' +
           '<col style="width:7%"><col style="width:12%"><col style="width:10%"><col style="width:18%">' +
-        '</colgroup><thead><tr><th>序号</th><th>类别</th><th>院校</th><th>专业</th><th>年份</th><th>参考分</th><th>2025位次</th><th>数据状态</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+        '</colgroup><thead><tr><th>序号</th><th>类别</th><th>院校</th><th>专业</th><th>年份</th><th>参考分</th><th>对应年份位次</th><th>数据状态</th></tr></thead><tbody>' + rows + '</tbody></table>' +
         '<footer class="pdf-print-footer">本方案依据系统保存时的数据生成，仅供志愿填报参考。最终招生计划、专业要求和录取规则，以福建省教育考试院及院校官方公布为准。PDF文件由系统直接生成并保存。</footer>';
       const datePart = new Date().toISOString().slice(0, 10).replace(/-/g, "");
       const filename = ("福建美术志愿方案_" + subjectText + "_" + basisText + "_" + datePart).replace(/[\/:*?"<>|\s]+/g, "_") + ".pdf";
@@ -5531,7 +5832,7 @@
       document.querySelectorAll("#methodSeg button").forEach(button => button.classList.toggle("active", button.dataset.value === recommendMode));
       $("scoreInput").value = plan.composite_score == null ? "" : plan.composite_score;
       $("rankInput").value = plan.candidate_rank || "";
-      latestRecommendations = dedupePlanRecommendations(plan.recommendations);
+      latestRecommendations = normalizeSavedRecommendations(plan);
       recommendationsGenerated = true;
       setRankData2025ForSubject();
       loadManagedRankData2026();
@@ -5666,7 +5967,8 @@
       btn.addEventListener("click", () => {
         document.querySelectorAll(".tabs button").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
-        ["recommend", "college", "rank", "saved"].forEach(name => $(name + "Tab").classList.toggle("hidden", name !== btn.dataset.tab));
+        ["recommend", "manual", "college", "rank", "saved"].forEach(name => $(name + "Tab").classList.toggle("hidden", name !== btn.dataset.tab));
+        if (btn.dataset.tab === "manual") renderManualSelection();
       });
     });
 
@@ -5719,6 +6021,16 @@
     window.setTimeout(loadSavedPlans, 0);
     $("copyBtn").addEventListener("click", copyRecommendations);
     $("refreshSavedBtn").addEventListener("click", loadSavedPlans);
+    $("saveManualBtn").addEventListener("click", saveManualPlan);
+    $("manualList").addEventListener("click", event => {
+      const button = event.target.closest("button[data-manual-action]");
+      if (!button) return;
+      if (button.dataset.manualAction === "add") addManualSelection(button.dataset.key);
+      if (button.dataset.manualAction === "remove") removeManualSelection(button.dataset.key);
+    });
+    $("manualList").addEventListener("click", event => {
+      if (event.target.closest("#manualLoadMoreBtn")) loadMoreManualCandidates();
+    });
     $("savedPlanList").addEventListener("click", event => {
       const button = event.target.closest("button[data-plan-action]");
       if (!button) return;
