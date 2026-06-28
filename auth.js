@@ -99,8 +99,30 @@
 
   async function signIn(email, password) {
     const supabaseClient = getClient();
-    if (!supabaseClient) throw new Error("Supabase 尚未配置");
+    if (!supabaseClient) throw new Error("Supabase \u672a\u914d\u7f6e");
     const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    return data;
+  }
+
+
+  async function signUp(email, password, displayName) {
+    const supabaseClient = getClient();
+    if (!supabaseClient) throw new Error("Supabase \u672a\u914d\u7f6e");
+    const { data, error } = await supabaseClient.auth.signUp({
+      email,
+      password,
+      options: { data: { display_name: displayName || "" } }
+    });
+    if (error) throw error;
+    return data;
+  }
+
+
+  async function updatePassword(password) {
+    const supabaseClient = getClient();
+    if (!supabaseClient) throw new Error("Supabase \u672a\u914d\u7f6e");
+    const { data, error } = await supabaseClient.auth.updateUser({ password });
     if (error) throw error;
     return data;
   }
@@ -119,6 +141,8 @@
     isConfigured,
     isEnabled,
     signIn,
+    signUp,
+    updatePassword,
     signOut
   };
 })();
