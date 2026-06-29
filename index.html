@@ -6144,14 +6144,18 @@
       const candidates = [];
       rows.forEach(item => {
         const band = item.min == null ? "info" : (useRank ? classifyByRank(item, userRank) : classifyByScore(item, score));
-        if (["rush", "steady", "safe"].includes(band) || (band === "info" && Number(item.planYear) === 2026 && item.min == null)) {
+        if (["rush", "steady", "safe"].includes(band) || Number(item.planYear) === 2026) {
           candidates.push({ item, band, key: recommendationKey(item) });
         }
       });
       candidates.sort((a, b) => {
         const order = { rush: 0, steady: 1, safe: 2, info: 3 };
         if (order[a.band] !== order[b.band]) return order[a.band] - order[b.band];
-        if (a.band === "info") return String(a.item.school || "").localeCompare(String(b.item.school || ""), "zh-CN") || String(a.item.program || a.item.info || "").localeCompare(String(b.item.program || b.item.info || ""), "zh-CN");
+        if (a.band === "info") {
+          const distanceDiff = rankDistance(a.item, userRank) - rankDistance(b.item, userRank);
+          if (Number.isFinite(distanceDiff) && distanceDiff) return distanceDiff;
+          return String(a.item.school || "").localeCompare(String(b.item.school || ""), "zh-CN") || String(a.item.program || a.item.info || "").localeCompare(String(b.item.program || b.item.info || ""), "zh-CN");
+        }
         if (useRank) return rankDistance(a.item, userRank) - rankDistance(b.item, userRank);
         return Math.abs((a.item.min || 0) - score) - Math.abs((b.item.min || 0) - score);
       });
@@ -6173,7 +6177,7 @@
       }, { rush: 0, steady: 0, safe: 0, info: 0 });
       $("manualCount").textContent = `${manualSelections.length} / ${VOLUNTEER_LIMIT}`;
       const visibleCount = Math.min(manualVisibleCount, candidates.length);
-      const statusBits = [`\u53ef\u9009\uff1a\u51b2 ${counts.rush || 0}\u3001\u7a33 ${counts.steady || 0}\u3001\u4fdd ${counts.safe || 0}\u3001\u65b0\u589e/\u65e0\u53c2\u8003 ${counts.info || 0}`];
+      const statusBits = [`\u53ef\u9009\uff1a\u51b2 ${counts.rush || 0}\u3001\u7a33 ${counts.steady || 0}\u3001\u4fdd ${counts.safe || 0}\u3001\u53c2\u8003/\u65b0\u589e ${counts.info || 0}`];
       if (candidates.length) statusBits.push(`\u5f53\u524d\u663e\u793a ${visibleCount}/${candidates.length} \u6761`);
       if (recommendMode === "rank" && !userRank) statusBits.push("\u8bf7\u5148\u586b\u5199\u8003\u751f\u4f4d\u6b21/\u6392\u540d\u3002 ");
       if (!candidates.length) statusBits.push("\u5f53\u524d\u6761\u4ef6\u4e0b\u6682\u65e0\u53ef\u9009\u9662\u6821\u4e13\u4e1a\uff0c\u53ef\u8c03\u6574\u7b5b\u9009\u6216\u5206\u6570\u3002");
