@@ -4988,6 +4988,7 @@
     let savedPlans = [];
     let currentSavedPlanId = "";
     let savedPlanUpdateTimer = 0;
+    let openingSavedPlan = false;
     let html2PdfPromise = null;
     let generationConfirmResolver = null;
     let generationConfirmTrigger = null;
@@ -6699,6 +6700,7 @@
       setRankData2025ForSubject();
       loadManagedRankData2026();
       render(Number(plan.composite_score) || 0, Number(plan.candidate_rank) || null, recommendMode === "rank");
+      openingSavedPlan = true;
       document.querySelector('[data-tab="recommend"]').click();
       $("recommendTab").scrollIntoView({ behavior: "smooth", block: "start" });
       $("savePlanStatus").textContent = "\u5df2\u6253\u5f00\u4fdd\u5b58\u7684\u65b9\u6848\u3002";
@@ -6834,7 +6836,10 @@
         document.querySelectorAll(".tabs button").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
         ["recommend", "manual", "college", "saved"].forEach(name => { const tab = $(name + "Tab"); if (tab) tab.classList.toggle("hidden", name !== btn.dataset.tab); });
-        if (btn.dataset.tab === "recommend" && recommendationsGenerated) makeRecommendations();
+        if (btn.dataset.tab === "recommend" && recommendationsGenerated) {
+          if (openingSavedPlan) openingSavedPlan = false;
+          else makeRecommendations();
+        }
         if (btn.dataset.tab === "manual") renderManualSelection();
         if (btn.dataset.tab === "saved") {
           loadSavedPlans();
